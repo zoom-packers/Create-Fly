@@ -3,7 +3,7 @@ package com.zurrtum.create.compat.computercraft;
 import com.zurrtum.create.api.behaviour.display.DisplaySource;
 import com.zurrtum.create.api.registry.CreateRegistries;
 import com.zurrtum.create.compat.Mods;
-import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
+import com.zurrtum.create.neoforge.CreateNeoForge;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -30,10 +30,8 @@ public class AllComputerDisplaySource {
     }
 
     public static void register() {
-        RegistryEntryAddedCallback.event(BuiltInRegistries.BLOCK).register((rawId, id, block) -> {
-            if (SUPPORT_BLOCK.contains(id)) {
-                DisplaySource.BY_BLOCK.add(block, COMPUTER);
-            }
-        });
+        // NeoForge: ComputerCraft registers its blocks in RegisterEvent, after Create's bootstrap registration
+        CreateNeoForge.afterRegistration(() -> SUPPORT_BLOCK.forEach(id -> BuiltInRegistries.BLOCK.getOptional(id)
+            .ifPresent(block -> DisplaySource.BY_BLOCK.add(block, COMPUTER))));
     }
 }

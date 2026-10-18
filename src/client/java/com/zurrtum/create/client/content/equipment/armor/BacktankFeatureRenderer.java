@@ -1,5 +1,6 @@
 package com.zurrtum.create.client.content.equipment.armor;
 
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zurrtum.create.catnip.math.AngleHelper;
 import com.zurrtum.create.client.catnip.animation.AnimationTickHolder;
@@ -49,14 +50,16 @@ public class BacktankFeatureRenderer<S extends HumanoidRenderState, M extends Hu
         getParentModel().body.translateAndRotate(ms);
         ms.translate(-0.5f, 0.625f, 1.0f);
         ms.scale(1, -1, -1);
-        backtank.submit(ms, queue);
-        cogs.submit(ms, queue);
-        nob.submit(ms, queue);
         if (entityState.chestEquipment.hasFoil()) {
-            RenderType glint = RenderTypes.entityGlint();
+            // 26.3: glint is part of the render type instead of a second pass
+            RenderType glint = RenderTypes.itemCutoutGlint(TextureAtlas.LOCATION_BLOCKS);
             backtank.submit(glint, ms, queue);
             cogs.submit(glint, ms, queue);
             nob.submit(glint, ms, queue);
+        } else {
+            backtank.submit(ms, queue);
+            cogs.submit(ms, queue);
+            nob.submit(ms, queue);
         }
         ms.popPose();
     }

@@ -92,7 +92,8 @@ public abstract class ModelBlockRendererMixin {
         BlockPos neighborPos
     );
 
-    @WrapOperation(method = "<init>", at = @At(value = "NEW", target = "()Lnet/minecraft/client/renderer/block/BlockModelLighter;"))
+    // NeoForge picks its enhanced lighter here; Create's lighter replaces it (TODO(neoforge 26.3): enhanced lighting is lost)
+    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/model/ao/EnhancedBlockModelLighter;newInstance()Lnet/minecraft/client/renderer/block/BlockModelLighter;"))
     private BlockModelLighter createModelLighter(Operation<BlockModelLighter> original) {
         return new ModelLighter();
     }
@@ -113,13 +114,13 @@ public abstract class ModelBlockRendererMixin {
         if (model instanceof WrapperBlockStateModel wrapper) {
             wrapper.addPartsWithInfo(level, pos, blockState, random, parts);
         } else {
-            model.collectParts(random, parts);
+            model.collectParts(level, pos, blockState, random, parts);
         }
         if (!parts.isEmpty()) {
             try {
                 Vec3 offset = blockState.getOffset(pos);
                 if (ambientOcclusion && (blockState.getBlock() instanceof CopycatBlock block ?
-                    block.getLuminance(level, pos) : blockState.getLightEmission()) == 0 && parts.getFirst()
+                    block.getLuminance(level, pos) : blockState.getLightEmission(level, pos)) == 0 && parts.getFirst()
                     .useAmbientOcclusion()) {
                     if (output instanceof VanillinMeshEmitterManager meshEmitter) {
                         meshEmitter.prepareForModelLayer(true);

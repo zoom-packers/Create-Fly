@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.logistics.depot;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.AllSoundEvents;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
@@ -77,7 +78,7 @@ public class SharedDepotBlockMethods {
                 }
             }
             if (!mainItemStack.isEmpty()) {
-                player.getInventory().placeItemBackInInventory(mainItemStack);
+                player.getInventory().placeItemBackInInventory(mainItemStack, Prediction.SERVER_ONLY);
                 behaviour.removeHeldItem();
                 level.playSound(
                     null,
@@ -96,7 +97,7 @@ public class SharedDepotBlockMethods {
             if (itemStack.isEmpty()) {
                 continue;
             }
-            player.getInventory().placeItemBackInInventory(itemStack);
+            player.getInventory().placeItemBackInInventory(itemStack, Prediction.SERVER_ONLY);
             change = true;
         }
         if (change) {

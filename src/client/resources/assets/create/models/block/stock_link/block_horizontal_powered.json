@@ -86,7 +86,7 @@
       "from": [3, 12, 5],
       "to": [13, 22, 5],
       "rotation": { "angle": 0, "axis": "y", "origin": [8, 11, 5] },
-      "shade": false,
+      "shade_direction_override": "up",
       "faces": {
         "north": {
           "uv": [0, 8, 5, 3],

@@ -8,6 +8,7 @@ import com.zurrtum.create.client.flywheel.lib.model.SimpleModel;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.Nullable;
 
@@ -62,5 +63,11 @@ class MeshEmitterManager<T extends MeshEmitter> {
             return emitterMap.get(renderType).getBuffer(key);
         }
         return null;
+    }
+
+    // TODO(neoforge 26.3): MaterialInfo#shade was replaced by a nullable shadeDirectionOverride. Quads with any
+    //  override are treated as unshaded, which is exact for the common "up" override (former shade: false).
+    static boolean isShaded(BakedQuad.MaterialInfo info) {
+        return info.shadeDirectionOverride() == null;
     }
 }

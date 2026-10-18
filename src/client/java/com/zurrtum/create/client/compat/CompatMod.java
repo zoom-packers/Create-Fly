@@ -1,17 +1,10 @@
 package com.zurrtum.create.client.compat;
 
-import com.zurrtum.create.client.compat.fabric.PotionRenderHandler;
-import com.zurrtum.create.client.compat.trinkets.GoggleTrinketRenderer;
-import com.zurrtum.create.compat.Mods;
-import net.fabricmc.loader.api.FabricLoader;
 
 public class CompatMod {
     public static void register() {
-        if (FabricLoader.getInstance().isModLoaded("fabric-transfer-api-v1")) {
-            PotionRenderHandler.register();
-        }
-        if (Mods.TRINKETS_UPDATED.isLoaded()) {
-            GoggleTrinketRenderer.register();
-        }
+        // NeoForge: the Fabric potion fluid renderer and the Trinkets goggle renderer are not ported (see PORTING.md)
+        // TODO(neoforge 26.3): EMI / SEMI recipe viewer plugin. Upstream's REI, RRV and EIV plugins are excluded from
+        //  the build; JEI is the only recipe viewer supported for now. Curios support for the goggles is also TODO.
     }
 }

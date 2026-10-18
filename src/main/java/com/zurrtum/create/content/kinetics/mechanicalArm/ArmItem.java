@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.kinetics.mechanicalArm;
 
+import net.minecraft.world.item.context.BlockPlaceContext;
 import com.zurrtum.create.infrastructure.packet.s2c.ArmPlacementRequestPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,18 +31,19 @@ public class ArmItem extends BlockItem {
         return super.useOn(ctx);
     }
 
+    // NeoForge 26.3: BlockItem#updateCustomBlockEntityTag is static now; this runs at the same point
     @Override
-    protected boolean updateCustomBlockEntityTag(
-        BlockPos pos,
+    public void onBlockPlacedBy(
+        BlockPlaceContext context,
         Level world,
+        BlockPos pos,
+        BlockState state,
         @Nullable Player player,
-        ItemStack p_195943_4_,
-        BlockState p_195943_5_
+        ItemStack stack
     ) {
         if (!world.isClientSide() && player instanceof ServerPlayer sp) {
             sp.connection.send(new ArmPlacementRequestPacket(pos));
         }
-        return super.updateCustomBlockEntityTag(pos, world, player, p_195943_4_, p_195943_5_);
     }
 
     @Override

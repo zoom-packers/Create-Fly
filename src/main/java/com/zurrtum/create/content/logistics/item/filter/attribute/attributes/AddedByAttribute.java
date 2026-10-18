@@ -6,8 +6,8 @@ import com.zurrtum.create.AllItemAttributeTypes;
 import com.zurrtum.create.content.logistics.item.filter.attribute.ItemAttribute;
 import com.zurrtum.create.content.logistics.item.filter.attribute.ItemAttributeType;
 import io.netty.buffer.ByteBuf;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
+import com.zurrtum.create.neoforge.Platform;
+import net.neoforged.neoforgespi.language.IModInfo;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -44,8 +44,7 @@ public record AddedByAttribute(String modId) implements ItemAttribute {
 
     @Override
     public Object[] getTranslationParameters() {
-        ModContainer container = FabricLoader.getInstance().getModContainer(modId).orElse(null);
-        String name = container == null ? StringUtils.capitalize(modId) : container.getMetadata().getName();
+        String name = Platform.getMod(modId).map(IModInfo::getDisplayName).orElseGet(() -> StringUtils.capitalize(modId));
         return new Object[]{name};
     }
 

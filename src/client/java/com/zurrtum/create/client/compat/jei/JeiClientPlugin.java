@@ -35,8 +35,8 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.fabric.constants.FabricTypes;
 import mezz.jei.api.helpers.IPlatformFluidHelper;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.registration.*;
 import mezz.jei.api.runtime.IIngredientManager;
@@ -194,7 +194,7 @@ public class JeiClientPlugin implements IModPlugin {
             SpoutFillingCategory.getRecipes(
                 preparedRecipes,
                 stacks.stream(),
-                ingredientManager.getAllIngredients(FabricTypes.FLUID_STACK).stream()
+                ingredientManager.getAllIngredients(NeoForgeTypes.FLUID_STACK).stream()
             )
         );
         registerToolboxRecipes(registration);
@@ -231,12 +231,12 @@ public class JeiClientPlugin implements IModPlugin {
         IPlatformFluidHelper<T> platformFluidHelper
     ) {
         registration.registerSubtypeInterpreter(
-            FabricTypes.FLUID_STACK,
+            NeoForgeTypes.FLUID_STACK,
             AllFluids.POTION,
             PotionFluidSubtypeInterpreter.INSTANCE
         );
         registration.registerSubtypeInterpreter(
-            FabricTypes.FLUID_STACK,
+            NeoForgeTypes.FLUID_STACK,
             AllFluids.POTION.getFlowing(),
             PotionFluidSubtypeInterpreter.INSTANCE
         );

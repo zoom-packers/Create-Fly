@@ -1,5 +1,6 @@
 package com.zurrtum.create.client.content.trains.track;
 
+import net.minecraft.world.item.component.SwingAnimation;
 import com.zurrtum.create.AllItemTags;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.catnip.math.VecHelper;
@@ -73,7 +74,7 @@ public class CurvedTrackInteraction {
 
             int progress = (int) (breakProgress * 10.0F) - 1;
             level.destroyBlockProgress(player.getId(), breakPos, progress);
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
 
             if (breakProgress >= 1) {
                 player.connection.send(new CurvedTrackDestroyPacket(

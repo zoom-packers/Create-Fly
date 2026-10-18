@@ -32,18 +32,17 @@ import com.zurrtum.create.infrastructure.worldgen.AllConfiguredFeatures;
 import com.zurrtum.create.infrastructure.worldgen.AllFeatures;
 import com.zurrtum.create.infrastructure.worldgen.AllPlacedFeatures;
 import com.zurrtum.create.infrastructure.worldgen.AllPlacementModifiers;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
+import com.zurrtum.create.neoforge.Platform;
 import net.minecraft.server.MinecraftServer;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class Create implements ModInitializer {
+// NeoForge: constructed by com.zurrtum.create.neoforge.CreateNeoForge
+public class Create {
     public static final String MOD_ID = "create";
     public static final String NAME = "Create";
     public static final Logger LOGGER = LogUtils.getLogger();
-    public static final String VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().getMetadata()
-        .getVersion().getFriendlyString().split("\\+")[0];
+    public static final String VERSION = Platform.getModVersion(MOD_ID).split("\\+")[0];
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     public static boolean Lazy;
 
@@ -54,7 +53,6 @@ public class Create implements ModInitializer {
     public static GlobalLogisticsManager LOGISTICS;
     public static ServerSchematicLoader SCHEMATIC_RECEIVER;
 
-    @Override
     public void onInitialize() {
         if (Lazy) {
             register();

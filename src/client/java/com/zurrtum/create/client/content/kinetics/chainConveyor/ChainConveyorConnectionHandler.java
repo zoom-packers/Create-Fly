@@ -1,5 +1,6 @@
 package com.zurrtum.create.client.content.kinetics.chainConveyor;
 
+import net.minecraft.world.item.component.SwingAnimation;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllSoundEvents;
 import com.zurrtum.create.api.entity.FakePlayerHandler;
@@ -88,7 +89,7 @@ public class ChainConveyorConnectionHandler {
         if (firstPos == null || firstDim != level.dimension()) {
             firstPos = pos;
             firstDim = level.dimension();
-            player.swing(hand);
+            player.swing(hand, SwingAnimation.DEFAULT, false);
             return InteractionResult.CONSUME;
         }
 

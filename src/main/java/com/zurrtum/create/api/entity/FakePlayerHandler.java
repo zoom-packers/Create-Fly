@@ -1,12 +1,12 @@
 package com.zurrtum.create.api.entity;
 
 import com.zurrtum.create.infrastructure.player.FakePlayerEntity;
-import net.fabricmc.fabric.api.entity.FakePlayer;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import net.minecraft.world.entity.Entity;
 
 public interface FakePlayerHandler {
-    boolean FABRIC = FabricLoader.getInstance().isModLoaded("fabric-events-interaction-v0");
+    // NeoForge: always use the platform fake player, so protection mods recognise deployers
+    boolean FABRIC = true;
 
     static boolean has(Entity player) {
         if (FABRIC && player instanceof FakePlayer) {

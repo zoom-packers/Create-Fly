@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.logistics.packager;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllItems;
@@ -164,7 +165,7 @@ public class PackagerBlock extends WrenchableDirectionalBlock implements IBE<Pac
                     return InteractionResult.SUCCESS;
                 }
                 if (!level.isClientSide()) {
-                    player.getInventory().placeItemBackInInventory(be.heldBox.copy());
+                    player.getInventory().placeItemBackInInventory(be.heldBox.copy(), Prediction.SERVER_ONLY);
                     player.level().playSound(
                         null,
                         player.blockPosition(),

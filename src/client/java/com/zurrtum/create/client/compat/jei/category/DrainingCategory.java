@@ -19,7 +19,6 @@ import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.types.IRecipeType;
-import net.fabricmc.fabric.api.recipe.v1.ingredient.DefaultCustomIngredients;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -32,6 +31,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeMap;
+import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.joml.Matrix3x2f;
 
@@ -51,7 +51,7 @@ public class DrainingCategory extends CreateCategory<RecipeHolder<EmptyingRecipe
         itemStream.forEach(stack -> {
             if (PotionFluidHandler.isPotionItem(stack)) {
                 Ingredient ingredient = stack.getComponentsPatch().isEmpty() ? Ingredient.of(stack.getItem()) :
-                    DefaultCustomIngredients.components(stack);
+                    DataComponentIngredient.of(false, stack.getComponentsPatch(), stack.getItem());
                 recipes.add(new RecipeHolder<>(
                     ResourceKey.create(
                         Registries.RECIPE,
@@ -79,7 +79,7 @@ public class DrainingCategory extends CreateCategory<RecipeHolder<EmptyingRecipe
                     "empty_" + itemName.getNamespace() + "_" + itemName.getPath() + "_with_" + fluidName.getNamespace() + "_" + fluidName.getPath()
                 );
                 Ingredient ingredient = stack.getComponentsPatch().isEmpty() ? Ingredient.of(stack.getItem()) :
-                    DefaultCustomIngredients.components(stack);
+                    DataComponentIngredient.of(false, stack.getComponentsPatch(), stack.getItem());
                 recipes.add(new RecipeHolder<>(
                     ResourceKey.create(Registries.RECIPE, id),
                     new EmptyingRecipe(

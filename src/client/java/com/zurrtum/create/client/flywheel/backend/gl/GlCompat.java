@@ -1,6 +1,9 @@
 package com.zurrtum.create.client.flywheel.backend.gl;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.backend.opengl.GlDevice;
+import com.mojang.renderpearl.frontend.FrontendGpuDevice;
 import com.zurrtum.create.client.flywheel.backend.FlwBackend;
 import com.zurrtum.create.client.flywheel.backend.compile.core.Compilation;
 import com.zurrtum.create.client.flywheel.backend.gl.shader.GlProgram;
@@ -15,15 +18,21 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.ByteBuffer;
 
 public final class GlCompat {
+    // 26.3 can also run on Vulkan. Flywheel's backends issue raw GL calls, so never touch GL unless the
+    // device is OpenGL; without capabilities every backend but "off" reports itself as unsupported.
+    public static final boolean SUPPORTS_OPENGL = isOpenGlDevice();
     public static final @UnknownNullability GLCapabilities CAPABILITIES;
 
     static {
-        GLCapabilities caps;
-        try {
-            caps = GL.getCapabilities();
-        } catch (IllegalStateException var2) {
-            FlwBackend.LOGGER.warn("Failed to get GL capabilities; default Flywheel backends will be disabled.");
-            caps = null;
+        GLCapabilities caps = null;
+        if (SUPPORTS_OPENGL) {
+            try {
+                caps = GL.getCapabilities();
+            } catch (IllegalStateException var2) {
+                FlwBackend.LOGGER.warn("Failed to get GL capabilities; default Flywheel backends will be disabled.");
+            }
+        } else {
+            FlwBackend.LOGGER.warn("Not running on the OpenGL backend; default Flywheel backends will be disabled.");
         }
 
         CAPABILITIES = caps;
@@ -41,8 +50,6 @@ public final class GlCompat {
 
     public static final boolean SUPPORTS_DSA = isDsaSupported();
 
-    public static final boolean SUPPORTS_OPENGL = RenderSystem.getDevice().getDeviceInfo().backendName()
-        .equals("OpenGL");
     public static final boolean SUPPORTS_INSTANCING = SUPPORTS_OPENGL && isInstancingSupported();
     public static final boolean SUPPORTS_INDIRECT = SUPPORTS_OPENGL && isIndirectSupported();
 
@@ -50,6 +57,18 @@ public final class GlCompat {
     }
 
     public static void init() {
+    }
+
+    /**
+     * Only valid when {@link #SUPPORTS_OPENGL} is true.
+     */
+    public static GlDevice device() {
+        return (GlDevice) ((FrontendGpuDevice) RenderSystem.getDevice()).backend;
+    }
+
+    private static boolean isOpenGlDevice() {
+        GpuDevice device = RenderSystem.tryGetDevice();
+        return device != null && device.getDeviceInfo().backendName().equals("OpenGL");
     }
 
     public static int getComputeGroupCount(int invocations) {

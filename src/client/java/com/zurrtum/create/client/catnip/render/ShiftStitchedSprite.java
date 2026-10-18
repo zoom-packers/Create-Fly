@@ -90,9 +90,12 @@ public class ShiftStitchedSprite extends StitchedSprite {
                 sprite,
                 layer,
                 info.itemRenderType(),
+                info.itemGlintRenderType(),
+                info.itemGlintSpecialRenderType(),
                 info.tintIndex(),
-                info.shade(),
-                info.lightEmission()
+                info.shadeDirectionOverride(),
+                info.lightEmission(),
+                info.ambientOcclusion()
             );
         }
         return BakedModelHelper.replaceBakedQuadUV(

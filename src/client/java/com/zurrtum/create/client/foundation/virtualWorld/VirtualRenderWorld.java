@@ -1,5 +1,6 @@
 package com.zurrtum.create.client.foundation.virtualWorld;
 
+import net.neoforged.neoforge.entity.PartEntity;
 import com.zurrtum.create.client.flywheel.api.visualization.VisualizationLevel;
 import it.unimi.dsi.fastutil.objects.Object2ShortMap;
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
@@ -23,7 +24,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
@@ -31,7 +31,6 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -398,15 +397,7 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel, Blo
         return level.enabledFeatures();
     }
 
-    @Override
-    public PotionBrewing potionBrewing() {
-        return level.potionBrewing();
-    }
 
-    @Override
-    public FuelValues fuelValues() {
-        return level.fuelValues();
-    }
 
     // ADDITIONAL OVERRRIDES
 
@@ -492,7 +483,7 @@ public class VirtualRenderWorld extends Level implements VisualizationLevel, Blo
     }
 
     @Override
-    public Collection<EnderDragonPart> dragonParts() {
+    public Collection<? extends PartEntity<?>> dragonParts() {
         return level.dragonParts();
     }
 

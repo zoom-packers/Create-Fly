@@ -1,5 +1,11 @@
 package com.zurrtum.create.mixin;
 
+import org.jspecify.annotations.Nullable;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelReader;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -26,9 +32,12 @@ public class BlockItemMixin {
         return original.call(context);
     }
 
-    @WrapOperation(method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
+    @WrapOperation(method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/block/SoundType;"))
     private SoundType checkSound(
         BlockState instance,
+        LevelReader level,
+        BlockPos pos,
+        @Nullable Entity entity,
         Operation<SoundType> original,
         @Local(argsOnly = true) BlockPlaceContext placeContext,
         @Share("group") LocalRef<ItemPlacementSoundContext> group
@@ -37,13 +46,16 @@ public class BlockItemMixin {
             group.set(context);
             return null;
         }
-        return original.call(instance);
+        return original.call(instance, level, pos, entity);
     }
 
-    @WrapOperation(method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/BlockItem;getPlaceSound(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/sounds/SoundEvent;"))
+    @WrapOperation(method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/BlockItem;getPlaceSound(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/sounds/SoundEvent;"))
     private SoundEvent getGroup(
         BlockItem instance,
         BlockState blockState,
+        Level level,
+        BlockPos pos,
+        @Nullable Player player,
         Operation<SoundEvent> original,
         @Share("group") LocalRef<ItemPlacementSoundContext> group
     ) {
@@ -54,7 +66,7 @@ public class BlockItemMixin {
                 return sound;
             }
         }
-        return original.call(instance, blockState);
+        return original.call(instance, blockState, level, pos, player);
     }
 
     @WrapOperation(method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/SoundType;getVolume()F"))

@@ -1,7 +1,5 @@
 package com.zurrtum.create.foundation.blockEntity;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,7 +14,6 @@ public abstract class CachedRenderBBBlockEntity extends SyncedBlockEntity {
         super(type, pos, state);
     }
 
-    @Environment(EnvType.CLIENT)
     public AABB getRenderBoundingBox() {
         if (renderBoundingBox == null) {
             renderBoundingBox = createRenderBoundingBox();

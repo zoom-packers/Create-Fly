@@ -1,3 +1,34 @@
+# Create Fly for NeoForge 26.3 (Zoompack 5 fork)
+
+This branch (`neoforge-26.3`) ports [Create Fly](https://github.com/ZurrTum/Create-Fly) from Fabric 26.2 to
+NeoForge 26.3 for the Zoompack 5 (ZP5) modpack. It is unofficial: please do not report problems with
+this build to the Create team or to ZurrTum. See [PORTING.md](PORTING.md) for what changed, what is disabled, and how
+this branch tracks upstream.
+
+## Credits and licences
+
+- **Create** by simibubi and the Creators of Create - <https://github.com/Creators-of-Create/Create>. Code under the
+  MIT License; the assets under `src/client/resources/assets/create/` are All Rights Reserved by the Create Team.
+  See [licenses/Create-LICENSE](licenses/Create-LICENSE).
+- **Create Fly** by ZurrTum - <https://github.com/ZurrTum/Create-Fly>, the Fabric port this fork is based on.
+  Released under CC0-1.0, see [LICENSE](LICENSE).
+- **Flywheel / Vanillin** (Engine-Room) and **Ponder** (Creators-of-Create), bundled by Create Fly - see
+  [licenses/Flywheel-LICENSE](licenses/Flywheel-LICENSE) and [licenses/Ponder-LICENSE](licenses/Ponder-LICENSE).
+- **NeoForge** and **Fabric** code included by Create Fly - see [licenses/NeoForge-LICENSE](licenses/NeoForge-LICENSE)
+  and [licenses/Fabric-LICENSE](licenses/Fabric-LICENSE).
+
+## Building
+
+```
+./gradlew build
+```
+
+The jar is written to `build/libs/create-fly-neoforge-<version>.jar`. It needs Java 25.
+
+---
+
+Upstream Create Fly README follows.
+
 <div align="center">
 
 # Create Fly

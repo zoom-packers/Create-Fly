@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.fluids.drain;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllShapes;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
@@ -97,7 +98,7 @@ public class ItemDrainBlock extends Block implements IWrenchable, IBE<ItemDrainB
 
                 ItemStack heldItemStack = be.getHeldItemStack();
                 if (!level.isClientSide() && !heldItemStack.isEmpty()) {
-                    player.getInventory().placeItemBackInInventory(heldItemStack);
+                    player.getInventory().placeItemBackInInventory(heldItemStack, Prediction.SERVER_ONLY);
                     be.heldItem = null;
                     be.notifyUpdate();
                 }

@@ -1,5 +1,6 @@
 package com.zurrtum.create.client.foundation.blockEntity;
 
+import org.lwjgl.sdl.SDLMouse;
 import com.mojang.blaze3d.platform.Window;
 import com.zurrtum.create.AllSoundEvents;
 import com.zurrtum.create.client.catnip.gui.AbstractSimiScreen;
@@ -20,7 +21,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
 
@@ -82,10 +82,10 @@ public class ValueSettingsScreen extends AbstractSimiScreen {
 
     private void setCursor(Vec2 coordinateOfValue) {
         double guiScale = minecraft.getWindow().getGuiScale();
-        GLFW.glfwSetCursorPos(
+        SDLMouse.SDL_WarpMouseInWindow(
             minecraft.getWindow().handle(),
-            coordinateOfValue.x * guiScale,
-            coordinateOfValue.y * guiScale
+            (float) (coordinateOfValue.x * guiScale),
+            (float) (coordinateOfValue.y * guiScale)
         );
     }
 

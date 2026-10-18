@@ -8,7 +8,8 @@ import com.zurrtum.create.compat.computercraft.implementation.peripherals.*;
 import com.zurrtum.create.content.logistics.box.PackageItem;
 import com.zurrtum.create.foundation.blockEntity.SmartBlockEntity;
 import dan200.computercraft.api.detail.VanillaDetailRegistries;
-import dan200.computercraft.api.peripheral.PeripheralLookup;
+import dan200.computercraft.api.peripheral.PeripheralCapability;
+import com.zurrtum.create.neoforge.CreateNeoForge;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.function.Function;
@@ -19,8 +20,9 @@ public class AllComputerPeripherals {
         Function<T, SyncedPeripheral<T>> factory
     ) {
         BlockEntityBehaviour.add(type, ComputerBehaviour::new);
-        PeripheralLookup.get().registerForBlockEntity(
-            (blockEntity, direction) -> {
+        // NeoForge: CC:Tweaked exposes peripherals as a block capability, registered in RegisterCapabilitiesEvent
+        CreateNeoForge.onRegisterCapabilities(event -> event.registerBlockEntity(
+            PeripheralCapability.get(), type, (blockEntity, direction) -> {
                 if (blockEntity.getBehaviour(AbstractComputerBehaviour.TYPE) instanceof ComputerBehaviour behaviour) {
                     if (behaviour.peripheral != null) {
                         return behaviour.peripheral;
@@ -28,8 +30,8 @@ public class AllComputerPeripherals {
                     return behaviour.peripheral = factory.apply(blockEntity);
                 }
                 return null;
-            }, type
-        );
+            }
+        ));
     }
 
     public static void register() {

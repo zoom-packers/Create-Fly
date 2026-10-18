@@ -26,15 +26,7 @@ import java.util.concurrent.Executor;
 
 @Mixin(ReloadableServerResources.class)
 public class ReloadableServerResourcesMixin {
-    @ModifyReturnValue(method = "listeners()Ljava/util/List;", at = @At("RETURN"))
-    private List<PreparableReloadListener> add(List<PreparableReloadListener> original) {
-        List<PreparableReloadListener> list = new ArrayList<>(original);
-        list.add(RecipeFinder.LISTENER);
-        list.add(RecipeTrieFinder.LISTENER);
-        list.add(BeltHelper.LISTENER);
-        list.add(AllConfigs.LISTENER);
-        return Collections.unmodifiableList(list);
-    }
+    // NeoForge: the reload listeners are added in CreateNeoForge#addReloadListeners
 
     @Inject(method = "lambda$loadResources$2(Lnet/minecraft/server/ReloadableServerRegistries$LoadResult;Lnet/minecraft/world/flag/FeatureFlagSet;Lnet/minecraft/commands/Commands$CommandSelection;Ljava/util/List;Lnet/minecraft/server/permissions/PermissionSet;Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/List;)Ljava/util/concurrent/CompletionStage;", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/resources/SimpleReloadInstance;create(Lnet/minecraft/server/packs/resources/ResourceManager;Ljava/util/List;Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Z)Lnet/minecraft/server/packs/resources/ReloadInstance;"))
     private static void onReload(

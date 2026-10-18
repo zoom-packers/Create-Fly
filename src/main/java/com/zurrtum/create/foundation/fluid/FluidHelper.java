@@ -1,5 +1,6 @@
 package com.zurrtum.create.foundation.fluid;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllFluidItemInventory;
 import com.zurrtum.create.AllTransfer;
 import com.zurrtum.create.catnip.data.Pair;
@@ -203,7 +204,7 @@ public class FluidHelper {
                 player.setItemInHand(handIn, emptyingResult.getSecond());
             } else {
                 player.setItemInHand(handIn, copyOfHeld);
-                player.getInventory().placeItemBackInInventory(emptyingResult.getSecond());
+                player.getInventory().placeItemBackInInventory(emptyingResult.getSecond(), Prediction.SERVER_ONLY);
             }
         }
         return true;
@@ -252,7 +253,7 @@ public class FluidHelper {
             capability.extract(copy, null);
 
             if (!player.isCreative()) {
-                player.getInventory().placeItemBackInInventory(out);
+                player.getInventory().placeItemBackInInventory(out, Prediction.SERVER_ONLY);
             }
             be.notifyUpdate();
             return true;

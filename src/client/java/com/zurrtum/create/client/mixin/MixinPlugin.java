@@ -1,6 +1,6 @@
 package com.zurrtum.create.client.mixin;
 
-import net.fabricmc.loader.api.FabricLoader;
+import com.zurrtum.create.neoforge.Platform;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -15,11 +15,11 @@ public class MixinPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         mixins = new ArrayList<>();
-        FabricLoader loader = FabricLoader.getInstance();
-        if (loader.isModLoaded("sodium")) {
+        // NeoForge: Fabric API modules are never present, so the vanilla-only mixin set is used
+        if (Platform.isModLoaded("sodium")) {
             mixins.add("QuadRenderHelperMixin");
         }
-        if (loader.isModLoaded("iris")) {
+        if (Platform.isModLoaded("iris")) {
             mixins.add("IrisPipelinesMixin");
         }
         //        if (loader.isModLoaded("eiv")) {
@@ -31,14 +31,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
         //            mixins.add("RecipeViewScreenMixin");
         //            mixins.add("CraftingViewRecipeAccessor");
         //        }
-        if (loader.isModLoaded("rrv")) {
-            mixins.add("RrvRecipeViewMenuMixin");
-            mixins.add("RrvRecipeViewScreenMixin");
-        }
-        if (!loader.isModLoaded("fabric-creative-tab-api-v1")) {
-            mixins.add("CreativeModeInventoryScreenMixin");
-        }
-        if (loader.isModLoaded("fabric-renderer-api-v1")) {
+        mixins.add("CreativeModeInventoryScreenMixin");
+        if (false) {
             mixins.add("SimpleModelPartMixin");
             mixins.add("SimpleModelWrapperMixin");
             mixins.add("WrapperBlockStateModelMixin");
@@ -62,12 +56,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
             mixins.add("ModelBlockRendererMixin");
             mixins.add("TerrainParticleMixin");
         }
-        if (loader.isModLoaded("fabric-block-api-v1")) {
-            mixins.add("ConnectedTextureBehaviourMixin");
-        }
-        if (!loader.isModLoaded("fabric-model-loading-api-v1")) {
-            mixins.add("LoadBlockModelMixin");
-        }
+        // NeoForge loads neoforge:obj models itself, so LoadBlockModelMixin is not needed
     }
 
     @Override

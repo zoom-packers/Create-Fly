@@ -27,17 +27,6 @@ import java.util.stream.Stream;
 
 @Mixin(RecipeManager.class)
 public class RecipeManagerMixin {
-    @Inject(method = "prepare(Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)Lnet/minecraft/world/item/crafting/RecipeMap;", at = @At(value = "INVOKE", target = "Ljava/util/SortedMap;size()I"))
-    private void addSequencedAssemblyRecipe(
-        ResourceManager manager,
-        ProfilerFiller profiler,
-        CallbackInfoReturnable<RecipeMap> cir,
-        @Local SortedMap<Identifier, Recipe<?>> recipes
-    ) {
-        recipes.putAll(SequencedAssemblyRecipe.GENERATE_RECIPES);
-        PotionRecipe.register(recipes);
-    }
-
     @WrapOperation(method = "finalizeRecipeLoading(Lnet/minecraft/world/flag/FeatureFlagSet;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;stream()Ljava/util/stream/Stream;"))
     public Stream<Entry<ResourceKey<RecipePropertySet>, IngredientExtractor>> registerRecipeSet(
         Set<Entry<ResourceKey<RecipePropertySet>, IngredientExtractor>> instance,

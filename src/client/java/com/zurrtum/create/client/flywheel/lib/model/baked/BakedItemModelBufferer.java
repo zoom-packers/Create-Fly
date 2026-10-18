@@ -1,6 +1,6 @@
 package com.zurrtum.create.client.flywheel.lib.model.baked;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zurrtum.create.client.flywheel.api.material.Material;
@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -31,12 +30,14 @@ public class BakedItemModelBufferer {
         BlendFunction.TRANSLUCENT,
         Transparency.TRANSLUCENT
     );
+    // TODO(neoforge 26.3): the separate glint render types (glint, glintTranslucent, entityGlint) are gone; glint is
+    //  now part of the item sheet render types, so the glint layers are the combined glint sheets.
     static final List<RenderType> CHUNK_LAYERS = List.of(
         Sheets.cutoutBlockItemSheet(),
         Sheets.translucentItemSheet(),
-        RenderTypes.glint(),
-        RenderTypes.glintTranslucent(),
-        RenderTypes.entityGlint()
+        Sheets.cutoutBlockItemGlintSheet(),
+        Sheets.translucentItemGlintSheet(),
+        Sheets.cutoutItemGlintSheet()
     );
 
     public static void bufferItemStack(

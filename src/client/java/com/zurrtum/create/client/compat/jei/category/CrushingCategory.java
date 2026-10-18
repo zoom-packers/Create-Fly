@@ -18,8 +18,6 @@ import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.types.IRecipeType;
-import net.fabricmc.fabric.api.recipe.v1.ingredient.CustomIngredient;
-import net.fabricmc.fabric.api.recipe.v1.ingredient.FabricIngredient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -29,6 +27,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 import org.joml.Matrix3x2f;
 
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public class CrushingCategory extends CreateCategory<RecipeHolder<? extends Crea
         for (RecipeHolder<MillingRecipe> entry : preparedRecipes.byType(AllRecipeTypes.MILLING)) {
             MillingRecipe recipe = entry.value();
             Ingredient ingredient = recipe.ingredient();
-            CustomIngredient customIngredient = ((FabricIngredient) ingredient).getCustomIngredient();
+            ICustomIngredient customIngredient = ingredient.getCustomIngredient();
             ItemStack firstInput;
             if (customIngredient == null) {
                 firstInput = ingredient.values.stream().findFirst().map(item -> item.value().getDefaultInstance())

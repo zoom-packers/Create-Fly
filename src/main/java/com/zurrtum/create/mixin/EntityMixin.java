@@ -132,18 +132,6 @@ public abstract class EntityMixin implements SyncedDataHolder {
         return original.call(entity, pose);
     }
 
-    @WrapOperation(method = "playStepSound(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
-    private SoundType getStepSound(
-        BlockState state,
-        Operation<SoundType> original,
-        @Local(argsOnly = true) BlockPos pos
-    ) {
-        if (state.getBlock() instanceof SoundControlBlock block) {
-            return block.getSoundGroup(level, pos);
-        }
-        return original.call(state);
-    }
-
     @WrapOperation(method = "move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getOnPosLegacy()Lnet/minecraft/core/BlockPos;"))
     private BlockPos fixSeatBouncing(Entity instance, Operation<BlockPos> original) {
         return getBlockStateOn().getBlock() instanceof SeatBlock ? getOnPos() : original.call(instance);
@@ -158,18 +146,5 @@ public abstract class EntityMixin implements SyncedDataHolder {
             return true;
         }
         return false;
-    }
-
-    @WrapOperation(method = "restituteMovementAfterCollisions(Lnet/minecraft/world/level/block/state/BlockState;ZZLnet/minecraft/world/phys/Vec3;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getBlockBounciness(Lnet/minecraft/world/level/block/Block;)D"))
-    private double getBlockBounciness(
-        Entity instance,
-        Block onBlock,
-        Operation<Double> original,
-        @Local(argsOnly = true) BlockState effectState
-    ) {
-        if (onBlock instanceof BouncinessControlBlock block && block.skipBounciness(effectState)) {
-            return 0;
-        }
-        return original.call(instance, onBlock);
     }
 }

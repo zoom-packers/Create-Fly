@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.contraptions.mounted;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllAdvancements;
 import com.zurrtum.create.AllDataComponents;
 import com.zurrtum.create.AllItems;
@@ -306,7 +307,7 @@ public class MinecartContraptionItem extends Item {
             AllAdvancements.CART_PICKUP.trigger(serverPlayer);
         }
 
-        player.getInventory().placeItemBackInInventory(generatedStack);
+        player.getInventory().placeItemBackInInventory(generatedStack, Prediction.SERVER_ONLY);
         oce.discard();
         entity.discard();
         return InteractionResult.SUCCESS;

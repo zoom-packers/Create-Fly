@@ -14,8 +14,6 @@ import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.types.IRecipeType;
-import net.fabricmc.fabric.api.recipe.v1.ingredient.CustomIngredient;
-import net.fabricmc.fabric.api.recipe.v1.ingredient.FabricIngredient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -26,6 +24,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 import org.joml.Matrix3x2f;
 
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class FanBlastingCategory extends CreateCategory<RecipeHolder<? extends S
         }
         SingleItemRecipe recipe = entry.value();
         Ingredient ingredient = recipe.input();
-        CustomIngredient customIngredient = ((FabricIngredient) ingredient).getCustomIngredient();
+        ICustomIngredient customIngredient = ingredient.getCustomIngredient();
         ItemStack firstInput;
         if (customIngredient == null) {
             firstInput = ingredient.values.stream().findFirst().map(item -> item.value().getDefaultInstance())

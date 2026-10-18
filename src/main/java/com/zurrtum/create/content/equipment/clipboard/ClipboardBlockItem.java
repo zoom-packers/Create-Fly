@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.equipment.clipboard;
 
+import net.minecraft.world.item.context.BlockPlaceContext;
 import com.zurrtum.create.AllClientHandle;
 import com.zurrtum.create.AllDataComponents;
 import com.zurrtum.create.foundation.recipe.ItemCopyingRecipe.SupportsItemCopying;
@@ -36,22 +37,23 @@ public class ClipboardBlockItem extends BlockItem implements SupportsItemCopying
         return use(context.getLevel(), player, context.getHand());
     }
 
+    // NeoForge 26.3: BlockItem#updateCustomBlockEntityTag is static now; this runs at the same point
     @Override
-    protected boolean updateCustomBlockEntityTag(
-        BlockPos pPos,
+    public void onBlockPlacedBy(
+        BlockPlaceContext context,
         Level pLevel,
+        BlockPos pPos,
+        BlockState pState,
         @Nullable Player pPlayer,
-        ItemStack pStack,
-        BlockState pState
+        ItemStack pStack
     ) {
         if (pLevel.isClientSide()) {
-            return false;
+            return;
         }
         if (!(pLevel.getBlockEntity(pPos) instanceof ClipboardBlockEntity cbe)) {
-            return false;
+            return;
         }
         cbe.notifyUpdate();
-        return true;
     }
 
     @Override

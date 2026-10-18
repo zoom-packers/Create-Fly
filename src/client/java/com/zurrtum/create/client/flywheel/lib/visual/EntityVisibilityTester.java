@@ -42,8 +42,9 @@ public class EntityVisibilityTester {
      * @return {@code true} if the Entity is visible, {@code false} otherwise.
      */
     public boolean check(FrustumIntersection frustum) {
-        AABB aabb = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entity)
-            .getBoundingBoxForCulling(entity);
+        Minecraft mc = Minecraft.getInstance();
+        AABB aabb = mc.getEntityRenderDispatcher().getRenderer(entity)
+            .getBoundingBoxForCulling(entity, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false));
 
         // If we've never seen the entity before assume its visible.
         // Fixes entities freezing when they first spawn.

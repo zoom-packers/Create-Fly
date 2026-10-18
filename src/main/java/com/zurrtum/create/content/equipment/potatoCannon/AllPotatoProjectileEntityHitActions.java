@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.equipment.potatoCannon;
 
+import net.minecraft.tags.BlockTags;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -169,7 +170,7 @@ public class AllPotatoProjectileEntityHitActions {
                 //                EntityTeleportEvent.ChorusFruit event = EventHooks.onChorusFruitTeleport(livingEntity, teleportX, teleportY, teleportZ);
                 //                if (event.isCanceled())
                 //                    return false;
-                if (livingEntity.randomTeleport(teleportX, teleportY, teleportZ, true)) {
+                if (livingEntity.randomTeleport(teleportX, teleportY, teleportZ, true, BlockTags.CONSUMABLE_DOES_NOT_TELEPORT_TO)) {
                     if (livingEntity.isPassenger()) {
                         livingEntity.stopRiding();
                     }

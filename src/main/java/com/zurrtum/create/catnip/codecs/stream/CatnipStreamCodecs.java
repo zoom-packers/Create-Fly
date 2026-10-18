@@ -44,12 +44,20 @@ public interface CatnipStreamCodecs {
     StreamCodec<FriendlyByteBuf, ListTag> COMPOUND_LIST_TAG = new StreamCodec<>() {
         @Override
         public ListTag decode(FriendlyByteBuf buffer) {
-            return buffer.readCollection(size -> new ListTag(), COMPOUND_AS_TAG);
+            // 26.3 removed FriendlyByteBuf#readCollection; same wire format
+            ListTag list = new ListTag();
+            for (int i = 0, size = buffer.readVarInt(); i < size; i++) {
+                list.add(COMPOUND_AS_TAG.decode(buffer));
+            }
+            return list;
         }
 
         @Override
         public void encode(FriendlyByteBuf buffer, ListTag value) {
-            buffer.writeCollection(value, COMPOUND_AS_TAG);
+            buffer.writeVarInt(value.size());
+            for (Tag tag : value) {
+                COMPOUND_AS_TAG.encode(buffer, tag);
+            }
         }
     };
     StreamCodec<ByteBuf, BlockState> BLOCK_STATE = ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY);

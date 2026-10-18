@@ -19,12 +19,12 @@ import com.zurrtum.create.client.ponder.Ponder;
 import com.zurrtum.create.client.ponder.foundation.PonderIndex;
 import com.zurrtum.create.client.vanillin.Vanillin;
 import com.zurrtum.create.content.trains.GlobalRailwayManager;
-import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.resources.Identifier;
 
 import static com.zurrtum.create.Create.MOD_ID;
 
-public class Create implements ClientModInitializer {
+// NeoForge: constructed by com.zurrtum.create.client.neoforge.CreateNeoForgeClient
+public class Create {
     public static SoulPulseEffectHandler SOUL_PULSE_EFFECT_HANDLER;
     public static ValueSettingsClient VALUE_SETTINGS_HANDLER;
     public static SuperGlueSelectionHandler GLUE_HANDLER;
@@ -36,7 +36,6 @@ public class Create implements ClientModInitializer {
     public static ZapperRenderHandler ZAPPER_RENDER_HANDLER;
     public static ClientResourceReloadListener RESOURCE_RELOAD_LISTENER;
 
-    @Override
     public void onInitializeClient() {
         new Flywheel().onInitializeClient();
         new Ponder().onInitializeClient();

@@ -4,7 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import net.fabricmc.loader.api.FabricLoader;
+import com.zurrtum.create.neoforge.Platform;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -27,9 +27,9 @@ public class Builder {
 
     Builder(String id, String type, boolean single) {
         if (single) {
-            configDir = FabricLoader.getInstance().getConfigDir().toFile();
+            configDir = Platform.getConfigDir().toFile();
         } else {
-            configDir = new File(FabricLoader.getInstance().getConfigDir().toFile(), id);
+            configDir = new File(Platform.getConfigDir().toFile(), id);
         }
         this.type = single ? id + "-" + type : type;
         if (configDir.exists()) {

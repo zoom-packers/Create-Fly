@@ -1,6 +1,5 @@
 package com.zurrtum.create.content.contraptions.actors.roller;
 
-import com.mojang.serialization.MapCodec;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllItems;
@@ -35,7 +34,6 @@ import java.util.function.Predicate;
 public class RollerBlock extends AttachedActorBlock implements IBE<RollerBlockEntity> {
     private static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());
 
-    public static final MapCodec<RollerBlock> CODEC = simpleCodec(RollerBlock::new);
 
     public RollerBlock(Properties p_i48377_1_) {
         super(p_i48377_1_);
@@ -117,9 +115,5 @@ public class RollerBlock extends AttachedActorBlock implements IBE<RollerBlockEn
 
     }
 
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 
 }

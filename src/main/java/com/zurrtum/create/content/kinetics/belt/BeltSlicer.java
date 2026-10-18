@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.kinetics.belt;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.catnip.math.VecHelper;
@@ -110,7 +111,7 @@ public class BeltSlicer {
             world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state));
 
             if (!creative && replacedState.is(AllBlocks.BELT) && replacedState.getValue(BeltBlock.PART) == BeltPart.PULLEY) {
-                player.getInventory().placeItemBackInInventory(AllItems.SHAFT.getDefaultInstance());
+                player.getInventory().placeItemBackInInventory(AllItems.SHAFT.getDefaultInstance(), Prediction.SERVER_ONLY);
             }
 
             // Eject overshooting items
@@ -142,7 +143,7 @@ public class BeltSlicer {
                         );
                         entity.setDeltaMovement(Vec3.ZERO);
                         entity.setDefaultPickUpDelay();
-                        entity.hurtMarked = true;
+                        entity.syncVelocity = true;
                         world.addFreshEntity(entity);
                     } else {
                         segmentBE.getInventory().addItem(transportedItemStack);
@@ -220,9 +221,9 @@ public class BeltSlicer {
                 }
 
                 if (!world.isClientSide()) {
-                    player.getInventory().placeItemBackInInventory(new ItemStack(AllItems.SHAFT, amountRetrieved));
+                    player.getInventory().placeItemBackInInventory(new ItemStack(AllItems.SHAFT, amountRetrieved), Prediction.SERVER_ONLY);
                     if (beltFound) {
-                        player.getInventory().placeItemBackInInventory(AllItems.BELT_CONNECTOR.getDefaultInstance());
+                        player.getInventory().placeItemBackInInventory(AllItems.BELT_CONNECTOR.getDefaultInstance(), Prediction.SERVER_ONLY);
                     }
                 }
                 return InteractionResult.FAIL;
@@ -411,8 +412,8 @@ public class BeltSlicer {
                 );
 
                 if (!creative) {
-                    player.getInventory().placeItemBackInInventory(new ItemStack(AllBlocks.SHAFT, 2));
-                    player.getInventory().placeItemBackInInventory(AllItems.BELT_CONNECTOR.getDefaultInstance());
+                    player.getInventory().placeItemBackInInventory(new ItemStack(AllBlocks.SHAFT, 2), Prediction.SERVER_ONLY);
+                    player.getInventory().placeItemBackInInventory(AllItems.BELT_CONNECTOR.getDefaultInstance(), Prediction.SERVER_ONLY);
                 }
 
                 for (BlockPos blockPos : BeltBlock.getBeltChain(world, controllerBE.getBlockPos())) {

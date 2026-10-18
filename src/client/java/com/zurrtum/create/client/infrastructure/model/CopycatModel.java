@@ -5,7 +5,6 @@ import com.zurrtum.create.catnip.data.Iterate;
 import com.zurrtum.create.content.decoration.copycat.CopycatBlock;
 import com.zurrtum.create.content.decoration.copycat.CopycatBlockEntity;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
@@ -24,7 +23,7 @@ import org.jetbrains.annotations.UnknownNullability;
 import java.util.List;
 
 /**
- * If FRAPI is already loaded, you need to override {@link FabricBlockStateModel#emitQuads} to use the {@link MutableQuadView#ambientOcclusion(TriState ao)} and {@link MutableQuadView#emissive(boolean emissive)} methods.
+ * If FRAPI is already loaded, you need to override {@code FabricBlockStateModel#emitQuads} to use the {@code MutableQuadView#ambientOcclusion(TriState ao)} and {@link MutableQuadView#emissive(boolean emissive)} methods.
  */
 public abstract class CopycatModel extends WrapperBlockStateModel {
     protected static final AABB CUBE_AABB = new AABB(BlockPos.ZERO);

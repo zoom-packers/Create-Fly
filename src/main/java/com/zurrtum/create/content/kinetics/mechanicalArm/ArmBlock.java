@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.kinetics.mechanicalArm;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.AllShapes;
@@ -127,7 +128,7 @@ public class ArmBlock extends KineticBlock implements IBE<ArmBlockEntity>, ICogW
                 if (level.isClientSide()) {
                     return;
                 }
-                player.getInventory().placeItemBackInInventory(be.heldItem);
+                player.getInventory().placeItemBackInInventory(be.heldItem, Prediction.SERVER_ONLY);
                 be.heldItem = ItemStack.EMPTY;
                 be.phase = Phase.SEARCH_INPUTS;
                 be.setChanged();

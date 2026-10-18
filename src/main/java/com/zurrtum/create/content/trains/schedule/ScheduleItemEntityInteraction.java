@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.trains.schedule;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.AllSoundEvents;
 import com.zurrtum.create.catnip.data.Couple;
@@ -106,7 +107,7 @@ public class ScheduleItemEntityInteraction {
                 train.runtime.isAutoSchedule ? "create.schedule.auto_removed_from_train" :
                     "create.schedule.removed_from_train"));
 
-            player.getInventory().placeItemBackInInventory(train.runtime.returnSchedule(player.registryAccess()));
+            player.getInventory().placeItemBackInInventory(train.runtime.returnSchedule(player.registryAccess()), Prediction.SERVER_ONLY);
         }
 
         player.getCooldowns().addCooldown(schedule, 5);

@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.equipment.wrench;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllSoundEvents;
 import com.zurrtum.create.catnip.math.VoxelShaper;
 import com.zurrtum.create.content.kinetics.base.*;
@@ -67,7 +68,7 @@ public interface IWrenchable {
         if (player != null && !player.isCreative()) {
             Block.getDrops(state, serverLevel, pos, world.getBlockEntity(pos), player, context.getItemInHand())
                 .forEach(itemStack -> {
-                    player.getInventory().placeItemBackInInventory(itemStack);
+                    player.getInventory().placeItemBackInInventory(itemStack, Prediction.SERVER_ONLY);
                 });
         }
 

@@ -4,7 +4,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.extensions.IBlockExtension;
 
-public interface WeakPowerControlBlock {
+// NeoForge: implemented through IBlockExtension, which NeoForge already calls where upstream needed a mixin
+public interface WeakPowerControlBlock extends IBlockExtension {
+    @Override
     boolean shouldCheckWeakPower(BlockState state, SignalGetter level, BlockPos pos, Direction side);
 }

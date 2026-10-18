@@ -1,8 +1,6 @@
 package com.zurrtum.create.client.mixin;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.metadata.ModMetadata;
+import com.zurrtum.create.neoforge.Platform;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.ClientPackSource;
 import net.minecraft.network.chat.Component;
@@ -32,16 +30,14 @@ import static com.zurrtum.create.Create.MOD_ID;
 public abstract class ClientPackSourceMixin {
     @Inject(method = "populatePackList(Ljava/util/function/BiConsumer;)V", at = @At("TAIL"))
     private void loadResourcePack(BiConsumer<String, Function<String, Pack>> discoveredPacks, CallbackInfo ci) {
-        FabricLoader loader = FabricLoader.getInstance();
-        ModContainer mod = loader.getModContainer(MOD_ID).orElseThrow();
-        List<Path> rootPaths = mod.getRootPaths();
-        ModMetadata metadata = mod.getMetadata();
-        String version = metadata.getVersion().getFriendlyString();
-        if (!loader.isModLoaded("fabric-api")) {
+        // NeoForge loads Create's own assets; only the optional packs are added here
+        List<Path> rootPaths = Platform.getModRootPaths(MOD_ID);
+        String version = Platform.getModVersion(MOD_ID);
+        if (false) {
             discoveredPacks.accept(
                 MOD_ID, id -> {
                     String directory = PackType.CLIENT_RESOURCES.getDirectory();
-                    PackLocationInfo info = createInfo(id, metadata.getName(), id, directory, version);
+                    PackLocationInfo info = createInfo(id, Platform.getModName(MOD_ID), id, directory, version);
                     ResourceMetadata meta = createMeta(Component.translatable("advancement.create.root"));
                     PackSelectionConfig position = new PackSelectionConfig(true, Pack.Position.BOTTOM, false);
                     return createPacket(
@@ -60,7 +56,7 @@ public abstract class ClientPackSourceMixin {
                 }
             );
         }
-        if (loader.isModLoaded("holdmyitems")) {
+        if (Platform.isModLoaded("holdmyitems")) {
             discoveredPacks.accept(
                 MOD_ID + "_holdmyitems", id -> {
                     String directory = "holdmyitems";
@@ -118,17 +114,7 @@ public abstract class ClientPackSourceMixin {
             builder.pushAssetPath(PackType.CLIENT_RESOURCES, path.resolve(directory));
         }
         VanillaPackResources pack = builder.build(info);
-        Pack.ResourcesSupplier packFactory = new Pack.ResourcesSupplier() {
-            @Override
-            public @NonNull PackResources openPrimary(@NonNull PackLocationInfo info) {
-                return pack;
-            }
-
-            @Override
-            public @NonNull PackResources openFull(@NonNull PackLocationInfo info, @NonNull Metadata metadata) {
-                return pack;
-            }
-        };
+        Pack.ResourcesSupplier packFactory = pack.asResourcesSupplier();
         return Pack.readMetaAndCreate(info, packFactory, PackType.CLIENT_RESOURCES, position);
     }
 }

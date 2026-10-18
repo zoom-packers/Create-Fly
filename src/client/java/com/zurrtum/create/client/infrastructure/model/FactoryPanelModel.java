@@ -131,14 +131,18 @@ public class FactoryPanelModel extends WrapperBlockStateModel {
             null
         );
         MaterialInfo info = bakedQuad.materialInfo();
-        if (ponder && info.shade()) {
+        // 26.3: unshaded quads are shaded as if facing up
+        if (ponder && info.shadeDirectionOverride() == null) {
             info = new MaterialInfo(
                 info.sprite(),
                 info.layer(),
                 info.itemRenderType(),
+                info.itemGlintRenderType(),
+                info.itemGlintSpecialRenderType(),
                 info.tintIndex(),
-                false,
-                info.lightEmission()
+                Direction.UP,
+                info.lightEmission(),
+                info.ambientOcclusion()
             );
         }
         return new BakedQuad(

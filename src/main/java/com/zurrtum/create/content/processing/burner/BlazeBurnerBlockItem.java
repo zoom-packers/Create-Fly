@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.processing.burner;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllEntityTags;
 import com.zurrtum.create.AllItems;
@@ -144,7 +145,7 @@ public class BlazeBurnerBlockItem extends BlockItem {
             player.setItemInHand(hand, filled);
             return;
         }
-        player.getInventory().placeItemBackInInventory(filled);
+        player.getInventory().placeItemBackInInventory(filled, Prediction.SERVER_ONLY);
     }
 
     private void spawnCaptureEffects(Level world, Vec3 vec) {

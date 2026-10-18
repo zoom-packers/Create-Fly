@@ -1,19 +1,19 @@
 package com.zurrtum.create.infrastructure.worldgen;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
 import static com.zurrtum.create.Create.MOD_ID;
 
 public class AllFeatures {
-    public static final LayeredOreFeature LAYERED_ORE = register("layered_ore", new LayeredOreFeature());
-
-    private static <C extends FeatureConfiguration, F extends Feature<C>> F register(String name, F feature) {
-        return Registry.register(BuiltInRegistries.FEATURE, Identifier.fromNamespaceAndPath(MOD_ID, name), feature);
-    }
+    // 26.3: the feature type registry holds codecs; feature instances are data (worldgen/feature)
+    public static final MapCodec<LayeredOreFeature> LAYERED_ORE = Registry.register(
+        BuiltInRegistries.FEATURE_TYPE,
+        Identifier.fromNamespaceAndPath(MOD_ID, "layered_ore"),
+        LayeredOreFeature.CODEC
+    );
 
     public static void register() {
     }

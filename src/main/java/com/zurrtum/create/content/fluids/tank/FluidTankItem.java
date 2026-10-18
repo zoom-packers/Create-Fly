@@ -42,20 +42,13 @@ public class FluidTankItem extends BlockItem {
         return initialResult;
     }
 
+    // NeoForge 26.3: BlockItem#updateCustomBlockEntityTag is static now; fix the stack before it is applied
     @Override
-    protected boolean updateCustomBlockEntityTag(
-        BlockPos blockPos,
-        Level level,
-        @Nullable Player player,
-        ItemStack itemStack,
-        BlockState blockState
-    ) {
-        MinecraftServer minecraftserver = level.getServer();
-        if (minecraftserver == null) {
-            return false;
-        }
+    protected boolean placeBlock(BlockPlaceContext context, BlockState blockState) {
+        ItemStack itemStack = context.getItemInHand();
+        MinecraftServer minecraftserver = context.getLevel().getServer();
         TypedEntityData<BlockEntityType<?>> data = itemStack.get(DataComponents.BLOCK_ENTITY_DATA);
-        if (data != null) {
+        if (minecraftserver != null && data != null) {
             CompoundTag nbt = data.copyTagWithoutId();
             nbt.remove("Luminosity");
             nbt.remove("Size");
@@ -74,7 +67,7 @@ public class FluidTankItem extends BlockItem {
                 TypedEntityData.of(((IBE<?>) getBlock()).getBlockEntityType(), nbt)
             );
         }
-        return super.updateCustomBlockEntityTag(blockPos, level, player, itemStack, blockState);
+        return super.placeBlock(context, blockState);
     }
 
     private void tryMultiPlace(BlockPlaceContext ctx) {

@@ -1,6 +1,5 @@
 package com.zurrtum.create.content.logistics.packagerLink;
 
-import com.mojang.serialization.MapCodec;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllShapes;
 import com.zurrtum.create.catnip.data.Iterate;
@@ -34,7 +33,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class PackagerLinkBlock extends FaceAttachedHorizontalDirectionalBlock implements IBE<PackagerLinkBlockEntity>, ProperWaterloggedBlock, IWrenchable {
-    public static final MapCodec<PackagerLinkBlock> CODEC = simpleCodec(PackagerLinkBlock::new);
 
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
@@ -162,8 +160,4 @@ public class PackagerLinkBlock extends FaceAttachedHorizontalDirectionalBlock im
         return AllBlockEntityTypes.PACKAGER_LINK;
     }
 
-    @Override
-    protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 }

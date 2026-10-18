@@ -19,7 +19,6 @@ import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.types.IRecipeType;
-import net.fabricmc.fabric.api.recipe.v1.ingredient.FabricIngredient;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.HolderSet;
 import net.minecraft.network.chat.Component;
@@ -45,7 +44,7 @@ public class BlockCuttingCategory extends CreateCategory<BlockCuttingDisplay> {
 
                 @Override
                 public int hashCode(Ingredient ingredient) {
-                    if (((FabricIngredient) ingredient).getCustomIngredient() != null) {
+                    if (ingredient.isCustom()) {
                         return ingredient.hashCode();
                     }
                     if (ingredient.values instanceof HolderSet.Direct<Item> direct) {

@@ -1,15 +1,15 @@
 package com.zurrtum.create.client.vanillin;
 
-import net.fabricmc.loader.api.FabricLoader;
+import com.zurrtum.create.neoforge.Platform;
 
 public class VanillinXplatImpl implements VanillinXplat {
     @Override
     public boolean isDevelopmentEnvironment() {
-        return FabricLoader.getInstance().isDevelopmentEnvironment();
+        return Platform.isDevelopmentEnvironment();
     }
 
     @Override
     public boolean isModLoaded(String modId) {
-        return FabricLoader.getInstance().isModLoaded(modId);
+        return Platform.isModLoaded(modId);
     }
 }

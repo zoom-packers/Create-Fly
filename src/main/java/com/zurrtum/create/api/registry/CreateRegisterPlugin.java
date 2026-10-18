@@ -1,8 +1,7 @@
 package com.zurrtum.create.api.registry;
 
 import com.zurrtum.create.catnip.data.Pair;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
+import java.util.ServiceLoader;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,15 +24,20 @@ public interface CreateRegisterPlugin {
     }
 
     static List<CreateRegisterPlugin> createPlugins() {
-        List<EntrypointContainer<CreateRegisterPlugin>> list = FabricLoader.getInstance()
-            .getEntrypointContainers("create_plugin", CreateRegisterPlugin.class);
+        // NeoForge: addons provide plugins through META-INF/services/com.zurrtum.create.api.registry.CreateRegisterPlugin
+        // instead of the "create_plugin" Fabric entrypoint. They are keyed by provider class name, Create's own first.
+        List<ServiceLoader.Provider<CreateRegisterPlugin>> list = ServiceLoader.load(
+            CreateRegisterPlugin.class,
+            CreateRegisterPlugin.class.getClassLoader()
+        ).stream().toList();
         List<Pair<String, CreateRegisterPlugin>> entries = new ArrayList<>(list.size());
         Comparator<Pair<String, CreateRegisterPlugin>> pluginComparator = Comparator.comparing((Pair<String, CreateRegisterPlugin> pair) -> !pair.getFirst()
             .equals("create")).thenComparing(Pair::getFirst);
-        for (EntrypointContainer<CreateRegisterPlugin> container : list) {
+        for (ServiceLoader.Provider<CreateRegisterPlugin> container : list) {
+            String name = container.type().getName();
             Pair<String, CreateRegisterPlugin> plugin = Pair.of(
-                container.getProvider().getMetadata().getId(),
-                container.getEntrypoint()
+                name.startsWith("com.zurrtum.create.") ? "create" : name,
+                container.get()
             );
             int index = Collections.binarySearch(entries, plugin, pluginComparator);
             int insertionPoint = index >= 0 ? index : -index - 1;

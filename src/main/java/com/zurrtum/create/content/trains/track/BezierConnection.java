@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.trains.track;
 
+import net.minecraft.util.Prediction;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.zurrtum.create.AllBlocks;
@@ -312,12 +313,12 @@ public class BezierConnection implements Iterable<BezierConnection.Segment> {
         Inventory inv = player.getInventory();
         int tracks = getTrackItemCost();
         while (tracks > 0) {
-            inv.placeItemBackInInventory(new ItemStack(getMaterial().getBlock(), Math.min(64, tracks)));
+            inv.placeItemBackInInventory(new ItemStack(getMaterial().getBlock(), Math.min(64, tracks)), Prediction.SERVER_ONLY);
             tracks -= 64;
         }
         int girders = getGirderItemCost();
         while (girders > 0) {
-            inv.placeItemBackInInventory(new ItemStack(AllItems.METAL_GIRDER, Math.min(64, girders)));
+            inv.placeItemBackInInventory(new ItemStack(AllItems.METAL_GIRDER, Math.min(64, girders)), Prediction.SERVER_ONLY);
             girders -= 64;
         }
     }

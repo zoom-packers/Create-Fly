@@ -1,15 +1,16 @@
 package com.zurrtum.create.client.catnip.render;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderPipeline.Snippet;
-import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline.Snippet;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.oit.OitPipelineSet;
 import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
@@ -105,6 +106,12 @@ public class PonderRenderPipelines {
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withCull(false)
             .withDepthStencilState(DEFAULT_TEST_NOT_WRITE)
     );
+    // TODO(neoforge 26.3): the ponder entity_block shader has no OIT variants, so with improved transparency the
+    //  translucent entity block types fall back to vanilla core/entity lighting instead of the ponder shading
+    public static final OitPipelineSet OIT_ENTITY_BLOCK = register(OitPipelineSet.builder(
+        Identifier.fromNamespaceAndPath(MOD_ID, "entity_block"),
+        RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET).withShaderDefine("NO_OVERLAY")
+    ).withAccumulateModifier(accumulate -> accumulate.withBindGroupLayout(BindGroupLayouts.SAMPLER2)).build());
     public static final RenderPipeline TRIANGLE_FAN = register(
         "triangle_fan",
         RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
@@ -114,7 +121,8 @@ public class PonderRenderPipelines {
     public static final RenderPipeline POSITION_COLOR_TRIANGLES = register(
         "position_color_triangles",
         RenderPipeline.builder(RenderPipelines.GLOBALS_SNIPPET)
-            .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION).withVertexShader("core/position_color")
+            .withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
+            .withVertexShader("core/position_color")
             .withFragmentShader("core/position_color")
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR).withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
@@ -132,5 +140,12 @@ public class PonderRenderPipelines {
         RenderPipeline pipeline = builder.withLocation(location).build();
         RenderPipelines.PIPELINES_BY_LOCATION.put(location, pipeline);
         return pipeline;
+    }
+
+    private static OitPipelineSet register(OitPipelineSet set) {
+        RenderPipelines.PIPELINES_BY_LOCATION.put(set.depthBoundsPipeline().getLocation(), set.depthBoundsPipeline());
+        RenderPipelines.PIPELINES_BY_LOCATION.put(set.transmittancePipeline().getLocation(), set.transmittancePipeline());
+        RenderPipelines.PIPELINES_BY_LOCATION.put(set.accumulatePipeline().getLocation(), set.accumulatePipeline());
+        return set;
     }
 }

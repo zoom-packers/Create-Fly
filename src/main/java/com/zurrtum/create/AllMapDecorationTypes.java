@@ -22,11 +22,10 @@ public class AllMapDecorationTypes {
     ) {
         Identifier key = Identifier.fromNamespaceAndPath(MOD_ID, id);
         ResourceKey<MapDecorationType> registryKey = ResourceKey.create(Registries.MAP_DECORATION_TYPE, key);
+        // 26.3 dropped the map color and exploration map flags from MapDecorationType
         MapDecorationType mapDecorationType = new MapDecorationType(
             key,
             showOnItemFrame,
-            mapColor,
-            explorationMapElement,
             trackCount
         );
         return Registry.registerForHolder(BuiltInRegistries.MAP_DECORATION_TYPE, registryKey, mapDecorationType);

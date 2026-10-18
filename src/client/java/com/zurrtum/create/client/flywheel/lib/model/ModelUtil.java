@@ -67,9 +67,11 @@ public final class ModelUtil {
         ITEM_CHUNK_MATERIALS.put(RenderTypes.translucentMovingBlock(), ENTITY_MATERIALS[10]);
         ITEM_CHUNK_MATERIALS.put(Sheets.translucentBlockItemSheet(), Materials.TRANSLUCENT_ITEM_ENTITY_BLOCK);
         ITEM_CHUNK_MATERIALS.put(Sheets.translucentItemSheet(), Materials.TRANSLUCENT_ITEM_ENTITY_ITEM);
-        ITEM_CHUNK_MATERIALS.put(RenderTypes.glint(), Materials.GLINT);
-        ITEM_CHUNK_MATERIALS.put(RenderTypes.glintTranslucent(), Materials.GLINT);
-        ITEM_CHUNK_MATERIALS.put(RenderTypes.entityGlint(), Materials.GLINT_ENTITY);
+        // TODO(neoforge 26.3): glint is no longer a separate pass; the combined glint sheets draw base texture and glint
+        //  in one render type. Map them to the base materials, which drops the glint overlay on Flywheel item models.
+        ITEM_CHUNK_MATERIALS.put(Sheets.cutoutBlockItemGlintSheet(), ENTITY_MATERIALS[6]);
+        ITEM_CHUNK_MATERIALS.put(Sheets.translucentBlockItemGlintSheet(), Materials.TRANSLUCENT_ITEM_ENTITY_BLOCK);
+        ITEM_CHUNK_MATERIALS.put(Sheets.translucentItemGlintSheet(), Materials.TRANSLUCENT_ITEM_ENTITY_ITEM);
     }
 
     private ModelUtil() {

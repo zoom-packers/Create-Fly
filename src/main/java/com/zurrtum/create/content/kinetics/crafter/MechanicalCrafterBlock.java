@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.kinetics.crafter;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllItems;
@@ -253,7 +254,7 @@ public class MechanicalCrafterBlock extends HorizontalKineticBlock implements IB
                     crafter.sendData();
                     if (!player.isCreative()) {
                         player.getInventory()
-                            .placeItemBackInInventory(AllItems.CRAFTER_SLOT_COVER.getDefaultInstance());
+                            .placeItemBackInInventory(AllItems.CRAFTER_SLOT_COVER.getDefaultInstance(), Prediction.SERVER_ONLY);
                     }
                     return InteractionResult.SUCCESS;
                 }
@@ -265,7 +266,7 @@ public class MechanicalCrafterBlock extends HorizontalKineticBlock implements IB
             if (level.isClientSide()) {
                 return InteractionResult.SUCCESS;
             }
-            player.getInventory().placeItemBackInInventory(handler.onExtract(inSlot));
+            player.getInventory().placeItemBackInInventory(handler.onExtract(inSlot), Prediction.SERVER_ONLY);
             handler.setStack(ItemStack.EMPTY);
             handler.setChanged();
             return InteractionResult.SUCCESS;

@@ -9,9 +9,7 @@ import com.zurrtum.create.client.infrastructure.fluid.FogDistanceSupplier;
 import com.zurrtum.create.infrastructure.fluids.FlowableFluid;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.loader.api.FabricLoader;
+import com.zurrtum.create.client.neoforge.NeoForgeFluidTints;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.FluidModel;
@@ -43,7 +41,6 @@ public class AllFluidConfigs {
     public static final FluidModel.Unbaked MILK = model(AllFluids.MILK);
     public static final FluidModel.Unbaked HONEY = model(AllFluids.HONEY);
     public static final FluidModel.Unbaked CHOCOLATE = model(AllFluids.CHOCOLATE);
-    public static final boolean HAS_RENDER = FabricLoader.getInstance().isModLoaded("fabric-transfer-api-v1");
 
     public static FluidModel.Unbaked model(FlowingFluid fluid) {
         Identifier id = BuiltInRegistries.FLUID.getKey(fluid);
@@ -82,8 +79,9 @@ public class AllFluidConfigs {
             return fluidTintSource.get(fluid, components);
         }
         BlockPos pos = new BlockPos((int) x, (int) y, (int) z);
-        if (HAS_RENDER) {
-            return FluidVariantRendering.getColor(FluidVariant.of(fluid, components), level, pos);
+        Integer neoForgeTint = NeoForgeFluidTints.getColor(model, fluid, components, level, pos);
+        if (neoForgeTint != null) {
+            return neoForgeTint;
         }
         BlockTintSource blockTintSource = model.tintSource();
         if (blockTintSource == null) {
@@ -111,8 +109,9 @@ public class AllFluidConfigs {
             return fluidTintSource.get(fluid, components);
         }
         BlockPos pos = new BlockPos((int) x, (int) y, (int) z);
-        if (HAS_RENDER) {
-            return FluidVariantRendering.getColor(FluidVariant.of(fluid, components), level, pos);
+        Integer neoForgeTint = NeoForgeFluidTints.getColor(model, fluid, components, level, pos);
+        if (neoForgeTint != null) {
+            return neoForgeTint;
         }
         return getBlockTint(level, pos, blockState, model.tintSource());
     }
@@ -129,8 +128,9 @@ public class AllFluidConfigs {
         if (fluidTintSource != null) {
             return fluidTintSource.get(fluid, components);
         }
-        if (HAS_RENDER) {
-            return FluidVariantRendering.getColor(FluidVariant.of(fluid, components), level, pos);
+        Integer neoForgeTint = NeoForgeFluidTints.getColor(model, fluid, components, level, pos);
+        if (neoForgeTint != null) {
+            return neoForgeTint;
         }
         return getBlockTint(level, pos, blockState, model.tintSource());
     }

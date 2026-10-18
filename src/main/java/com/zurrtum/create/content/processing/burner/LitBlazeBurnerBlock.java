@@ -16,7 +16,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ShovelItem;
+import net.neoforged.neoforge.common.ItemAbilities;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -59,7 +59,8 @@ public class LitBlazeBurnerBlock extends Block implements IWrenchable {
         InteractionHand hand,
         BlockHitResult hitResult
     ) {
-        if (stack.getItem() instanceof ShovelItem/* || stack.getItem().canPerformAction(stack, EXTINGUISH_FLAME_ACTION)*/) {
+        // 26.3 removed ShovelItem; shovels advertise the NeoForge shovel_douse ability
+        if (stack.canPerformAction(ItemAbilities.SHOVEL_DOUSE)) {
             level.playSound(player, pos, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 0.5f, 2);
             if (level.isClientSide()) {
                 return InteractionResult.SUCCESS;

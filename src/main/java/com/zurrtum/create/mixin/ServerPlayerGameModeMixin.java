@@ -147,24 +147,25 @@ public class ServerPlayerGameModeMixin {
         return result;
     }
 
-    @WrapOperation(method = "destroyBlock(Lnet/minecraft/core/BlockPos;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;removeBlock(Lnet/minecraft/core/BlockPos;Z)Z"))
+    // NeoForge: blocks are removed through ServerPlayerGameMode#removeBlock, which calls onDestroyedByPlayer
+    @WrapOperation(method = "destroyBlock(Lnet/minecraft/core/BlockPos;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayerGameMode;removeBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;ZLnet/minecraft/world/item/ItemStack;)Z"))
     private boolean removeBlock(
-        ServerLevel world,
+        ServerPlayerGameMode instance,
         BlockPos pos,
-        boolean move,
-        Operation<Boolean> original,
-        @Local(ordinal = 0) BlockState adjustedState,
-        @Local Block block
+        BlockState adjustedState,
+        boolean canHarvest,
+        ItemStack toolStack,
+        Operation<Boolean> original
     ) {
-        if (block instanceof BreakControlBlock controlBlock && !controlBlock.onDestroyedByPlayer(
+        if (adjustedState.getBlock() instanceof BreakControlBlock controlBlock && !controlBlock.onDestroyedByPlayer(
             adjustedState,
-            world,
+            player.level(),
             pos,
             player
         )) {
             return false;
         }
-        boolean remove = original.call(world, pos, move);
+        boolean remove = original.call(instance, pos, adjustedState, canHarvest, toolStack);
         if (remove) {
             SymmetryHandler.onBlockDestroyed(player, pos, adjustedState);
         }

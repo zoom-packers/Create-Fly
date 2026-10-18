@@ -1,6 +1,6 @@
 package com.zurrtum.create.content.logistics.factoryBoard;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.AllShapes;
@@ -57,7 +57,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.UUID;
 
 public class FactoryPanelBlock extends FaceAttachedHorizontalDirectionalBlock implements ProperWaterloggedBlock, IBE<FactoryPanelBlockEntity>, IWrenchable, SpecialBlockItemRequirement, BreakControlBlock {
-    public static final MapCodec<FactoryPanelBlock> CODEC = simpleCodec(FactoryPanelBlock::new);
 
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
@@ -151,7 +150,7 @@ public class FactoryPanelBlock extends FaceAttachedHorizontalDirectionalBlock im
                 }
 
                 if (!player.isCreative()) {
-                    player.getInventory().placeItemBackInInventory(AllItems.FACTORY_GAUGE.getDefaultInstance());
+                    player.getInventory().placeItemBackInInventory(AllItems.FACTORY_GAUGE.getDefaultInstance(), Prediction.SERVER_ONLY);
                 }
 
                 IWrenchable.playRemoveSound(world, pos);
@@ -398,8 +397,4 @@ public class FactoryPanelBlock extends FaceAttachedHorizontalDirectionalBlock im
         return ItemRequirement.NONE;
     }
 
-    @Override
-    protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 }

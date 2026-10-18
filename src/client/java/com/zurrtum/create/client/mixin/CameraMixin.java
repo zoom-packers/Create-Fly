@@ -1,5 +1,6 @@
 package com.zurrtum.create.client.mixin;
 
+import net.minecraft.client.DeltaTracker;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.zurrtum.create.client.content.trains.CameraDistanceModifier;
@@ -18,8 +19,8 @@ public class CameraMixin {
         return original.call(instance, cameraDist) * CameraDistanceModifier.getMultiplier();
     }
 
-    @Inject(method = "extractRenderState(Lnet/minecraft/client/renderer/state/level/CameraRenderState;F)V", at = @At("TAIL"))
-    private void extractRenderState(CameraRenderState cameraState, float cameraEntityPartialTicks, CallbackInfo ci) {
+    @Inject(method = "extractRenderState(Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lnet/minecraft/client/DeltaTracker;)V", at = @At("TAIL"))
+    private void extractRenderState(CameraRenderState cameraState, DeltaTracker deltaTracker, CallbackInfo ci) {
         ((CameraInfoHolder) cameraState).flywheel$update((Camera) (Object) this);
     }
 }

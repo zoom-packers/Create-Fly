@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.logistics.chute;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllAdvancements;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
 import com.zurrtum.create.catnip.data.Iterate;
@@ -248,7 +249,7 @@ public abstract class AbstractChuteBlock extends Block implements IWrenchable, I
                 if (be.item.isEmpty()) {
                     return InteractionResult.TRY_WITH_EMPTY_HAND;
                 }
-                player.getInventory().placeItemBackInInventory(be.item);
+                player.getInventory().placeItemBackInInventory(be.item, Prediction.SERVER_ONLY);
                 be.setItem(ItemStack.EMPTY);
                 return InteractionResult.SUCCESS;
             }

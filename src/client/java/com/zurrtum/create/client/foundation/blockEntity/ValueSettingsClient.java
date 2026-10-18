@@ -98,7 +98,8 @@ public class ValueSettingsClient {
         }
 
         if (interactHeldTicks > 3) {
-            player.swinging = false;
+            // 26.3: swings are a SwingState; drop the current one
+            player.swingState.currentSwing = null;
         }
         if (interactHeldTicks++ < 5) {
             return;

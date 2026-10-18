@@ -19,13 +19,13 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
-import net.minecraft.client.gui.Hud.ContextualInfo;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -36,17 +36,27 @@ public class HudMixin {
     @Final
     private Minecraft minecraft;
 
-    @WrapOperation(method = "extractHotbarAndDecorations(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;nextContextualInfoState()Lnet/minecraft/client/gui/Hud$ContextualInfo;"))
-    private ContextualInfo renderMainHud(
-        Hud instance,
-        Operation<ContextualInfo> original,
-        @Local(argsOnly = true) GuiGraphicsExtractor graphics,
-        @Local(argsOnly = true) DeltaTracker deltaTracker
-    ) {
-        if (TrainHUD.renderOverlay(minecraft, graphics, deltaTracker)) {
-            return ContextualInfo.EMPTY;
+    @Unique
+    private boolean create$trainHud;
+
+    @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V", at = @At("HEAD"))
+    private void resetTrainHud(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        create$trainHud = false;
+    }
+
+    @Inject(method = "extractContextualInfoBarBackground(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V", at = @At("HEAD"), cancellable = true)
+    private void renderMainHud(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        create$trainHud = TrainHUD.renderOverlay(minecraft, graphics, deltaTracker);
+        if (create$trainHud) {
+            ci.cancel();
         }
-        return original.call(instance);
+    }
+
+    @Inject(method = "extractContextualInfoBar(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V", at = @At("HEAD"), cancellable = true)
+    private void hideContextualInfoBar(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (create$trainHud) {
+            ci.cancel();
+        }
     }
 
     @Inject(method = "extractCrosshair(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V", at = @At("TAIL"))

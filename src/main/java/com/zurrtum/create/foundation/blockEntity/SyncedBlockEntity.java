@@ -1,5 +1,6 @@
 package com.zurrtum.create.foundation.blockEntity;
 
+import net.minecraft.network.Connection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -40,6 +41,12 @@ public abstract class SyncedBlockEntity extends BlockEntity {
 
     public void handleUpdateTag(ValueInput view) {
         readClient(view);
+    }
+
+    // NeoForge: ClientPacketListener calls this for block entity data packets
+    @Override
+    public void onDataPacket(Connection connection, ValueInput view) {
+        onDataPacket(view);
     }
 
     public void onDataPacket(ValueInput view) {

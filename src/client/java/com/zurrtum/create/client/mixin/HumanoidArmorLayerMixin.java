@@ -1,5 +1,6 @@
 package com.zurrtum.create.client.mixin;
 
+import net.minecraft.client.renderer.rendertype.RenderType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zurrtum.create.client.content.equipment.armor.LayerRenderState;
 import com.zurrtum.create.foundation.item.LayeredArmorItem;
@@ -39,11 +40,10 @@ public abstract class HumanoidArmorLayerMixin<S extends HumanoidRenderState, M e
             layer.model = model;
             layer.state = state;
             layer.light = lightCoords;
-            submitNodeCollector.order(0)
-                .submitCustomGeometry(poseStack, RenderTypes.armorCutoutNoCull(item.getLayerTexture()), layer);
-            if (itemStack.hasFoil()) {
-                submitNodeCollector.order(1).submitCustomGeometry(poseStack, RenderTypes.armorEntityGlint(), layer);
-            }
+            // 26.3: glint is part of the render type instead of a second pass
+            RenderType renderType = itemStack.hasFoil() ? RenderTypes.armorCutoutNoCullGlint(item.getLayerTexture()) : RenderTypes.armorCutoutNoCull(
+                item.getLayerTexture());
+            submitNodeCollector.order(0).submitCustomGeometry(poseStack, renderType, layer);
         }
     }
 }

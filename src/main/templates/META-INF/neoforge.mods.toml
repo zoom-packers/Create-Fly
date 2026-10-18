@@ -1,0 +1,46 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "CC0-1.0 (Create Fly code); MIT (Create code); All Rights Reserved (Create assets)"
+issueTrackerURL = "https://github.com/ZurrTum/Create-Fly/issues"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "Create Fly (NeoForge)"
+iconFile = "assets/pack.png"
+authors = "simibubi and the Creators of Create (Create); ZurrTum (Create Fly); Zoom Packers (NeoForge 26.3 port)"
+displayURL = "https://github.com/ZurrTum/Create-Fly"
+description = '''
+Create, as ported to Minecraft 26.x by Create Fly, running on NeoForge 26.3.
+Unofficial: do not report issues from this build to the Create or Create Fly developers.
+'''
+
+[[mixins]]
+config = "create.mixins.json"
+
+[[mixins]]
+config = "create.client.mixins.json"
+
+[[accessTransformers]]
+file = "META-INF/accesstransformer.cfg"
+
+[[dependencies.${mod_id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neo_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+type = "required"
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "jei"
+type = "optional"
+versionRange = "[31.15,)"
+ordering = "NONE"
+side = "CLIENT"

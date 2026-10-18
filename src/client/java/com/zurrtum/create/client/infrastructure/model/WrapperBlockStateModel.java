@@ -70,7 +70,7 @@ public abstract class WrapperBlockStateModel implements BlockStateModel, BlockSt
         if (model instanceof WrapperBlockStateModel wrapper) {
             wrapper.addPartsWithInfo(level, pos, state, random, parts);
         } else {
-            model.collectParts(random, parts);
+            model.collectParts(level, pos, state, random, parts);
         }
     }
 
@@ -122,6 +122,18 @@ public abstract class WrapperBlockStateModel implements BlockStateModel, BlockSt
     @Override
     public void collectParts(RandomSource random, List<BlockStateModelPart> parts) {
         model.collectParts(random, parts);
+    }
+
+    // NeoForge: renderers call the level-aware collectParts, which replaces upstream's FRAPI/mixin hooks
+    @Override
+    public void collectParts(
+        BlockAndTintGetter level,
+        BlockPos pos,
+        BlockState state,
+        RandomSource random,
+        List<BlockStateModelPart> parts
+    ) {
+        addPartsWithInfo(level, pos, state, random, parts);
     }
 
     public boolean needUpdateTerrainParticle() {

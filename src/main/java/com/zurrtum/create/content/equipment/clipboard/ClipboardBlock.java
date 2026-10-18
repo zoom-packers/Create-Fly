@@ -1,7 +1,7 @@
 package com.zurrtum.create.content.equipment.clipboard;
 
+import net.minecraft.util.Prediction;
 import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.MapCodec;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllClientHandle;
 import com.zurrtum.create.AllShapes;
@@ -44,7 +44,6 @@ public class ClipboardBlock extends FaceAttachedHorizontalDirectionalBlock imple
 
     public static final BooleanProperty WRITTEN = BooleanProperty.create("written");
 
-    public static final MapCodec<ClipboardBlock> CODEC = simpleCodec(ClipboardBlock::new);
 
     public ClipboardBlock(Properties pProperties) {
         super(pProperties);
@@ -129,7 +128,7 @@ public class ClipboardBlock extends FaceAttachedHorizontalDirectionalBlock imple
             if (selected.isEmpty()) {
                 inv.setSelectedItem(cloneItemStack);
             } else {
-                inv.placeItemBackInInventory(cloneItemStack);
+                inv.placeItemBackInInventory(cloneItemStack, Prediction.SERVER_ONLY);
             }
         }
     }
@@ -200,8 +199,4 @@ public class ClipboardBlock extends FaceAttachedHorizontalDirectionalBlock imple
         return AllBlockEntityTypes.CLIPBOARD;
     }
 
-    @Override
-    protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 }

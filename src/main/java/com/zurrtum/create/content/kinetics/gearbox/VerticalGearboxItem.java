@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.kinetics.gearbox;
 
+import net.minecraft.world.item.context.BlockPlaceContext;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.catnip.data.Iterate;
 import com.zurrtum.create.content.kinetics.base.IRotate;
@@ -28,13 +29,15 @@ public class VerticalGearboxItem extends BlockItem {
     public void registerBlocks(Map<Block, Item> p_195946_1_, Item p_195946_2_) {
     }
 
+    // NeoForge 26.3: BlockItem#updateCustomBlockEntityTag is static now; this runs at the same point
     @Override
-    protected boolean updateCustomBlockEntityTag(
-        BlockPos pos,
+    public void onBlockPlacedBy(
+        BlockPlaceContext context,
         Level world,
+        BlockPos pos,
+        BlockState state,
         @Nullable Player player,
-        ItemStack stack,
-        BlockState state
+        ItemStack stack
     ) {
         Axis prefferedAxis = null;
         for (Direction side : Iterate.horizontalDirections) {
@@ -58,7 +61,6 @@ public class VerticalGearboxItem extends BlockItem {
         Axis axis = prefferedAxis == null ? player.getDirection().getClockWise().getAxis() :
             prefferedAxis == Axis.X ? Axis.Z : Axis.X;
         world.setBlockAndUpdate(pos, state.setValue(BlockStateProperties.AXIS, axis));
-        return super.updateCustomBlockEntityTag(pos, world, player, stack, state);
     }
 
 }

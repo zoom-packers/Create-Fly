@@ -7,7 +7,7 @@ import com.zurrtum.create.content.schematics.requirement.ItemRequirement;
 import com.zurrtum.create.foundation.advancement.AdvancementBehaviour;
 import com.zurrtum.create.foundation.advancement.CreateTrigger;
 import com.zurrtum.create.foundation.blockEntity.behaviour.BehaviourType;
-import com.zurrtum.create.foundation.blockEntity.behaviour.CachedInventoryBehaviour;
+import com.zurrtum.create.neoforge.transfer.CachedInventoryBehaviour;
 import com.zurrtum.create.foundation.utility.IInteractionChecker;
 import com.zurrtum.create.ponder.api.VirtualBlockEntity;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;

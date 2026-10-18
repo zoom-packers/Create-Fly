@@ -35,22 +35,22 @@ public class BeltTunnelItem extends BlockItem {
         )) && world.isUnobstructed(state, pos, iselectioncontext);
     }
 
+    // NeoForge 26.3: BlockItem#updateCustomBlockEntityTag is static now; this runs at the same point
     @Override
-    protected boolean updateCustomBlockEntityTag(
-        BlockPos pos,
+    public void onBlockPlacedBy(
+        BlockPlaceContext context,
         Level world,
-        @Nullable Player p_195943_3_,
-        ItemStack p_195943_4_,
-        BlockState state
+        BlockPos pos,
+        BlockState state,
+        @Nullable Player player,
+        ItemStack stack
     ) {
-        boolean flag = super.updateCustomBlockEntityTag(pos, world, p_195943_3_, p_195943_4_, state);
         if (!world.isClientSide()) {
             BeltBlockEntity belt = BeltHelper.getSegmentBE(world, pos.below());
             if (belt != null && belt.casing == CasingType.NONE) {
                 belt.setCasingType(state.is(AllBlocks.ANDESITE_TUNNEL) ? CasingType.ANDESITE : CasingType.BRASS);
             }
         }
-        return flag;
     }
 
 }

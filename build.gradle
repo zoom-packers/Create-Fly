@@ -1,5 +1,10 @@
+// NeoForge 26.3 build of Create Fly, maintained for Zoompack 5.
+// Mirrors ZP5's mods/build-logic/src/main/groovy/zp5.neoforge-mod.gradle, but keeps upstream's split
+// main/client source sets so the tree stays rebaseable on ZurrTum/Create-Fly.
 plugins {
-    id "net.fabricmc.fabric-loom" version "${loom_version}"
+    id 'java-library'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.148'
 }
 
 repositories {
@@ -18,42 +23,70 @@ repositories {
         }
     }
     addGroup("https://maven.blamejared.com", "mezz.jei")
-    addGroup("https://maven.cassian.cc", "cc.cassian.rrv")
-    addGroup("https://maven.squiddev.cc", "cc.tweaked")
-    addGroup("https://maven.nucleoid.xyz/releases", "eu.pb4")
     addGroup("https://api.modrinth.com/maven", "maven.modrinth")
 }
 
-version = "$project.mod_version-$project.mod_id"
+def modId = project.mod_id
+
+version = "${project.mod_version}+neoforge-${project.minecraft_version}"
 group = project.maven_group
 
 base {
-    archivesName = "$project.archives_base_name-$project.minecraft_version"
+    archivesName = project.archives_base_name
 }
 
-loom {
-    splitEnvironmentSourceSets()
-    accessWidenerPath = file("src/main/resources/create.classtweaker")
-    mods {
-        create {
-            sourceSet sourceSets.main
-            sourceSet sourceSets.client
-        }
-    }
-}
+// Mojang ships Java 25 with 26.x, so mods target Java 25.
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 sourceSets {
     main {
         java {
+            // Recipe viewers other than JEI are not ported (see PORTING.md)
             exclude 'com/zurrtum/create/compat/rei/**'
             exclude 'com/zurrtum/create/compat/eiv/**'
             exclude 'com/zurrtum/create/mixin/ArchitecturyMixin.java'
+            // Fabric API bridges, replaced by com/zurrtum/create/neoforge/** (see PORTING.md)
+            exclude 'com/zurrtum/create/compat/fabric/**'
+            exclude 'com/zurrtum/create/mixin/MenuProviderMixin.java'
+            exclude 'com/zurrtum/create/mixin/ReloadListenerMixin.java'
+            exclude 'com/zurrtum/create/mixin/IngredientMixin.java'
+            // 26.3 removed FuelValues; fuels are cooking_fuel components (CreateNeoForge#addFuels)
+            exclude 'com/zurrtum/create/mixin/FuelValuesMixin.java'
+            // Replaced by NeoForge IBlockExtension hooks (see foundation/block/*ControlBlock)
+            ['AbstractBoatMixin', 'ExperienceOrbMixin', 'ItemEntityMixin', 'LeashableMixin', 'SignalGetterMixin',
+             'ExplosionDamageCalculatorMixin'].each {
+                exclude "com/zurrtum/create/mixin/${it}.java"
+            }
+            exclude 'com/zurrtum/create/foundation/recipe/ComponentsIngredient.java'
+            exclude 'com/zurrtum/create/foundation/blockEntity/behaviour/CachedInventoryBehaviour.java'
+            exclude 'com/zurrtum/create/foundation/blockEntity/behaviour/CachedDirectionInventoryBehaviour.java'
+            exclude 'com/zurrtum/create/foundation/blockEntity/behaviour/CachedFluidInventoryBehaviour.java'
+            ['FluidInventorySlotWrapper', 'FluidInventoryStorage', 'FluidInventoryStorageImpl', 'FluidInventoryWrapper',
+             'FluidItemContext', 'FluidItemInventoryWrapper', 'InventoryWrapper', 'SidedFluidInventorySlotWrapper',
+             'SidedFluidInventoryStorageImpl', 'SingleFluidStackStorage'].each {
+                exclude "com/zurrtum/create/infrastructure/transfer/${it}.java"
+            }
+        }
+        resources {
+            // Fabric-only metadata and data
+            exclude 'fabric.mod.json'
+            exclude 'create.classtweaker'
+            exclude '_data'
+            // Fabric convention tags, only used without Fabric API; NeoForge ships its own c: tags
+            exclude 'data/fabric/**'
+            // Trinkets is Fabric-only
+            exclude 'data/trinkets/**'
         }
     }
     client {
+        compileClasspath += main.output
+        runtimeClasspath += main.output
         java {
             exclude 'com/zurrtum/create/client/compat/rei/**'
             exclude 'com/zurrtum/create/client/compat/eiv/**'
+            exclude 'com/zurrtum/create/client/compat/rrv/**'
+            // Trinkets is Fabric-only; Curios support is a TODO (see PORTING.md)
+            exclude 'com/zurrtum/create/client/compat/trinkets/**'
             exclude 'com/zurrtum/create/client/mixin/CraftingViewRecipeAccessor.java'
             exclude 'com/zurrtum/create/client/mixin/FabricEIVMixin.java'
             exclude 'com/zurrtum/create/client/mixin/FluidItemSpecialRendererMixin.java'
@@ -65,86 +98,158 @@ sourceSets {
             exclude 'com/zurrtum/create/client/mixin/ItemFeatureRendererMixin.java'
             exclude 'com/zurrtum/create/client/mixin/ModelMixin.java'
             exclude 'com/zurrtum/create/client/mixin/ModelPartMixin.java'
+            // Fabric API (FRAPI, transfer rendering) bridges; NeoForge uses the vanilla-only code paths
+            exclude 'com/zurrtum/create/client/compat/fabric/**'
+            exclude 'com/zurrtum/create/client/flywheel/lib/model/baked/FabricEmitterSupplier.java'
+            exclude 'com/zurrtum/create/client/foundation/model/FabricBakedModelHelper.java'
+            ['BufferAoPoseEmitterMixin', 'BufferColorPoseEmitterMixin', 'BufferEmitterMixin', 'BufferPoseEmitterMixin',
+             'ConnectedTextureBehaviourMixin', 'CopycatModelMixin', 'CopycatPanelModelMixin', 'CopycatStepModelMixin',
+             'ItemModelRenderHelperMixin', 'ModelRenderHelperMixin', 'SimpleModelPartMixin',
+             'WrapperBlockStateModelAccessor', 'WrapperBlockStateModelMixin', 'RrvRecipeViewMenuMixin',
+             'RrvRecipeViewScreenMixin'].each {
+                exclude "com/zurrtum/create/client/mixin/${it}.java"
+            }
+        }
+        resources {
+            // Fabric API translations, only used without Fabric API
+            exclude 'assets/fabric/**'
         }
     }
 }
 
-tasks.register("serverJar", Jar) {
-    archiveClassifier = "server"
-    from sourceSets.main.output
-    from("LICENSE")
-    from("licenses") {
-        into "licenses"
+configurations {
+    clientCompileOnly.extendsFrom compileOnly
+    clientImplementation.extendsFrom implementation
+    // Runtime-only mods for the dev runs
+    localRuntime
+    runtimeClasspath.extendsFrom localRuntime
+    clientRuntimeClasspath.extendsFrom localRuntime
+}
+
+neoForge {
+    version = project.neo_version
+
+    addModdingDependenciesTo sourceSets.client
+
+    // Compile-time view of the interfaces ContainerMixin/WorldlyContainerMixin add at runtime
+    interfaceInjectionData {
+        from file('interfaces.json')
+    }
+
+    runs {
+        client {
+            client()
+            sourceSet = sourceSets.client
+            systemProperty 'neoforge.enabledGameTestNamespaces', modId
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', modId
+        }
+        gameTestServer {
+            type = 'gameTestServer'
+            systemProperty 'neoforge.enabledGameTestNamespaces', modId
+        }
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.INFO
+            if (project.hasProperty('mixinDebug')) {
+                systemProperty 'mixin.debug.verbose', 'true'
+                systemProperty 'mixin.debug.export', 'true'
+                systemProperty 'mixin.checks.interfaces', 'true'
+            }
+            // Diagnostics: log every failed injection instead of stopping at the first required one
+            if (project.hasProperty('mixinScan')) {
+                systemProperty 'mixin.ignoreRequired', 'true'
+                systemProperty 'mixin.debug.countInjections', 'true'
+                systemProperty 'mixin.debug.verbose', 'true'
+            }
+        }
+    }
+
+    mods {
+        "${modId}" {
+            sourceSet(sourceSets.main)
+            // -PserverOnly runs the server side without building the client source set
+            if (!project.hasProperty('serverOnly')) {
+                sourceSet(sourceSets.client)
+            }
+        }
     }
 }
 
-tasks.build {
-    dependsOn tasks.serverJar
+configurations {
+    // Mods whose classes ship as jar-in-jar; their nested jars are put on the compile classpath
+    jarJarCompileOnly
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    if (project.compile_only_fabric_api.equals("true")) {
-        compileOnly fabricApi.module("fabric-transfer-api-v1", project.fabric_version)
-        compileOnly fabricApi.module("fabric-events-interaction-v0", project.fabric_version)
-        compileOnly fabricApi.module("fabric-recipe-api-v1", project.fabric_version)
-        compileOnly fabricApi.module("fabric-resource-loader-v1", project.fabric_version)
-        compileOnly fabricApi.module("fabric-block-api-v1", project.fabric_version)
-        compileOnly fabricApi.module("fabric-registry-sync-v0", project.fabric_version)
-        clientCompileOnly fabricApi.module("fabric-renderer-api-v1", project.fabric_version)
-        clientCompileOnly fabricApi.module("fabric-model-loading-api-v1", project.fabric_version)
-    } else {
-        implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    }
-//    modCompileOnly "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
-//    if (project.compile_only_rei.equals("false")) {
-//        modClientRuntimeOnly "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
-//    }
     clientCompileOnly "mezz.jei:jei-${project.jei_version}"
-//    modCompileOnly "maven.modrinth:eiv:${project.eiv_version}"
-    clientCompileOnly "cc.cassian.rrv:reliable-recipe-viewer-fabric:${rrv_version}"
-    compileOnly "cc.tweaked:cc-tweaked-${project.cct_version}"
-    clientCompileOnly "eu.pb4:trinkets:${project.trinkets_version}"
+    compileOnly "maven.modrinth:cc-tweaked:${project.cct_version}"
+    // Sodium for NeoForge nests the real mod jar under META-INF/jarjar
+    jarJarCompileOnly "maven.modrinth:sodium:${project.sodium_version}"
     clientCompileOnly "maven.modrinth:sodium:${project.sodium_version}"
     clientCompileOnly "maven.modrinth:iris:${project.iris_version}"
 }
 
-processResources {
-    def version = project.version
-    inputs.property "version", version
-
-    filesMatching("fabric.mod.json") {
-        expand "version": version
+var extractJarJarCompileOnly = tasks.register('extractJarJarCompileOnly', Sync) {
+    from(configurations.jarJarCompileOnly.incoming.files.elements.map { it.collect { zipTree(it.asFile) } }) {
+        include 'META-INF/jarjar/*.jar'
+        eachFile { path = name }
     }
-
-    exclude "_data"
+    into layout.buildDirectory.dir('jarjar-compile')
+    includeEmptyDirs = false
+}
+dependencies {
+    clientCompileOnly files(extractJarJarCompileOnly.map { it.destinationDir.listFiles() ?: [] }).builtBy(extractJarJarCompileOnly)
 }
 
+// Expands ${...} placeholders in src/main/templates (neoforge.mods.toml) from gradle.properties.
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    var replaceProperties = [
+            minecraft_version_range: project.minecraft_version_range,
+            neo_version_range      : project.neo_version_range,
+            mod_id                 : modId,
+            mod_version            : project.version,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from 'src/main/templates'
+    into 'build/generated/sources/modMetadata'
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 25
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xmaxerrs', '100000']
+    options.release = 25
 }
 
 java {
     withSourcesJar()
-    tasks.named("sourcesJar", Jar) {
-        from("LICENSE")
-        from("licenses") {
-            into "licenses"
-        }
-        exclude '_data'
-        exclude 'assets'
-        exclude 'data'
-    }
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
 }
 
-jar {
-    inputs.property "archivesName", project.base.archivesName
-
+tasks.named('sourcesJar', Jar) {
+    from sourceSets.client.allJava
     from("LICENSE")
     from("licenses") {
         into "licenses"
+    }
+}
+
+jar {
+    from sourceSets.client.output
+    from("LICENSE")
+    from("licenses") {
+        into "licenses"
+    }
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
     }
 }

@@ -1,5 +1,10 @@
 package com.zurrtum.create.content.kinetics.mixer;
 
+import net.minecraft.world.item.Items;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.predicates.PotionsPredicate;
+import net.minecraft.world.item.crafting.PotionIngredient;
+import net.minecraft.world.item.crafting.BrewingRecipe;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.zurrtum.create.AllRecipeSerializers;
@@ -25,7 +30,6 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -61,65 +65,50 @@ public record PotionRecipe(FluidStack result, FluidIngredient fluidIngredient,
         if (data == null) {
             return;
         }
-        PotionBrewing potionBrewing = PotionBrewing.bootstrap(data.enabledFeatures);
+        // 26.3: brewing is data driven. Every brewing recipe names one container and one input potion, so the
+        // mixing recipes are derived from the loaded brewing recipes instead of the removed PotionBrewing registry.
         int recipeIndex = 0;
-        List<Item> allowedSupportedContainers = new ArrayList<>();
-        for (Ingredient container : potionBrewing.containers) {
-            if (container.values instanceof HolderSet.Direct<Item> direct) {
-                //noinspection OptionalGetWithoutIsPresent
-                for (Holder<Item> holder : direct.unwrap().right().get()) {
-                    allowedSupportedContainers.add(holder.value());
+        Map<Identifier, Recipe<?>> mixes = new LinkedHashMap<>();
+        for (Recipe<?> recipe : map.values()) {
+            if (!(recipe instanceof BrewingRecipe brewing)) {
+                continue;
+            }
+            ItemStack output = brewing.getOutput().create();
+            PotionContents outputContents = output.get(DataComponents.POTION_CONTENTS);
+            if (outputContents == null || !isBottle(output.getItem())) {
+                continue;
+            }
+            PotionIngredient input = brewing.getInput();
+            List<Holder<Potion>> inputPotions = input.potions().flatMap(PotionsPredicate::potions)
+                .map(set -> set.stream().toList()).orElse(List.of());
+            FluidStack toFluid = PotionFluidHandler.getFluidFromPotion(
+                outputContents,
+                PotionFluidHandler.bottleTypeFromItem(output.getItem()),
+                81000
+            );
+            Ingredient reagent = brewing.getReagent().ingredient();
+            for (Holder<Item> container : input.ingredient().items().toList()) {
+                if (!isBottle(container.value())) {
+                    continue;
+                }
+                BottleType fromBottleType = PotionFluidHandler.bottleTypeFromItem(container.value());
+                for (Holder<Potion> potion : inputPotions) {
+                    FluidIngredient fromFluid = PotionFluidHandler.getFluidIngredientFromPotion(
+                        new PotionContents(potion),
+                        fromBottleType,
+                        81000
+                    );
+                    Identifier id = Identifier.fromNamespaceAndPath(MOD_ID, "potion_mixing_vanilla_" + recipeIndex++);
+                    mixes.put(id, new PotionRecipe(toFluid, fromFluid, reagent));
                 }
             }
         }
-        for (Item container : allowedSupportedContainers) {
-            BottleType bottleType = PotionFluidHandler.bottleTypeFromItem(container);
-            for (PotionBrewing.Mix<Potion> mix : potionBrewing.potionMixes) {
-                FluidIngredient fromFluid = PotionFluidHandler.getFluidIngredientFromPotion(
-                    new PotionContents(mix.from()),
-                    bottleType,
-                    81000
-                );
-                FluidStack toFluid = PotionFluidHandler.getFluidFromPotion(
-                    new PotionContents(mix.to()),
-                    bottleType,
-                    81000
-                );
-                Identifier id = Identifier.fromNamespaceAndPath(MOD_ID, "potion_mixing_vanilla_" + recipeIndex++);
-                map.put(id, new PotionRecipe(toFluid, fromFluid, mix.ingredient()));
-            }
-        }
-        for (PotionBrewing.Mix<Item> mix : potionBrewing.containerMixes) {
-            Item from = mix.from().value();
-            if (!allowedSupportedContainers.contains(from)) {
-                continue;
-            }
-            Item to = mix.to().value();
-            if (!allowedSupportedContainers.contains(to)) {
-                continue;
-            }
-            BottleType fromBottleType = PotionFluidHandler.bottleTypeFromItem(from);
-            BottleType toBottleType = PotionFluidHandler.bottleTypeFromItem(to);
-            Ingredient ingredient = mix.ingredient();
-
-            List<Reference<Potion>> potions = data.registries.lookupOrThrow(Registries.POTION).listElements().toList();
-
-            for (Reference<Potion> potion : potions) {
-                FluidIngredient fromFluid = PotionFluidHandler.getFluidIngredientFromPotion(
-                    new PotionContents(potion),
-                    fromBottleType,
-                    81000
-                );
-                FluidStack toFluid = PotionFluidHandler.getFluidFromPotion(
-                    new PotionContents(potion),
-                    toBottleType,
-                    81000
-                );
-                Identifier id = Identifier.fromNamespaceAndPath(MOD_ID, "potion_mixing_vanilla_" + recipeIndex++);
-                map.put(id, new PotionRecipe(toFluid, fromFluid, ingredient));
-            }
-        }
+        map.putAll(mixes);
         data = null;
+    }
+
+    private static boolean isBottle(Item item) {
+        return item == Items.POTION || item == Items.SPLASH_POTION || item == Items.LINGERING_POTION;
     }
 
     @Override

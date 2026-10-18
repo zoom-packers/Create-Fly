@@ -225,9 +225,12 @@ public class BakedModelHelper {
                     info.sprite(),
                     layer,
                     itemRenderType,
+                    info.itemGlintRenderType(),
+                    info.itemGlintSpecialRenderType(),
                     info.tintIndex(),
-                    info.shade(),
-                    info.lightEmission()
+                    info.shadeDirectionOverride(),
+                    info.lightEmission(),
+                    info.ambientOcclusion()
                 )
             );
             setNormals(newQuad, quad);

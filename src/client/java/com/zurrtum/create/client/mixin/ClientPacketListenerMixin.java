@@ -54,13 +54,4 @@ public class ClientPacketListenerMixin {
             ci.cancel();
         }
     }
-
-    @WrapOperation(method = "lambda$handleBlockEntityData$0(Lnet/minecraft/network/protocol/game/ClientboundBlockEntityDataPacket;Lnet/minecraft/world/level/block/entity/BlockEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntity;loadWithComponents(Lnet/minecraft/world/level/storage/ValueInput;)V"))
-    private void onDataPacket(BlockEntity blockEntity, ValueInput input, Operation<Void> original) {
-        if (blockEntity instanceof SyncedBlockEntity syncedBlockEntity) {
-            syncedBlockEntity.onDataPacket(input);
-        } else {
-            original.call(blockEntity, input);
-        }
-    }
 }

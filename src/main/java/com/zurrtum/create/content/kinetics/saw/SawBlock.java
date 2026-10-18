@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.kinetics.saw;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.*;
 import com.zurrtum.create.catnip.placement.IPlacementHelper;
 import com.zurrtum.create.catnip.placement.PlacementHelpers;
@@ -168,7 +169,7 @@ public class SawBlock extends DirectionalAxisKineticBlock implements IBE<SawBloc
                         if (heldItemStack.isEmpty()) {
                             continue;
                         }
-                        player.getInventory().placeItemBackInInventory(heldItemStack);
+                        player.getInventory().placeItemBackInInventory(heldItemStack, Prediction.SERVER_ONLY);
                     }
                 }
                 be.inventory.clearContent();

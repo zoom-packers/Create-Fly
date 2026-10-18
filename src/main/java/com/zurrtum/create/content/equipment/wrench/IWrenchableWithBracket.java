@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.equipment.wrench;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.content.fluids.FluidPropagator;
 import net.minecraft.core.BlockPos;
@@ -36,7 +37,7 @@ public interface IWrenchableWithBracket extends IWrenchable {
         if (bracket.isPresent()) {
             Player player = context.getPlayer();
             if (!world.isClientSide() && !player.isCreative()) {
-                player.getInventory().placeItemBackInInventory(bracket.get());
+                player.getInventory().placeItemBackInInventory(bracket.get(), Prediction.SERVER_ONLY);
             }
             if (!world.isClientSide() && blockState.getBlock() == AllBlocks.FLUID_PIPE) {
                 Axis preferred = FluidPropagator.getStraightPipeAxis(blockState);

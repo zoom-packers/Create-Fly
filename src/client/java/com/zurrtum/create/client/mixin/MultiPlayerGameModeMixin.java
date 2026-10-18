@@ -1,5 +1,6 @@
 package com.zurrtum.create.client.mixin;
 
+import net.minecraft.world.level.material.FluidState;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -147,7 +148,7 @@ public class MultiPlayerGameModeMixin {
         return original.call(instance, pos);
     }
 
-    @WrapOperation(method = "lambda$startDestroyBlock$1(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;I)Lnet/minecraft/network/protocol/Packet;", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"))
+    @WrapOperation(method = "lambda$startDestroyBlock$1(Lnet/minecraft/world/level/block/state/BlockState;Lnet/neoforged/neoforge/event/entity/player/PlayerInteractEvent$LeftClickBlock;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;I)Lnet/minecraft/network/protocol/Packet;", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"))
     private boolean onLeftClick2(
         MultiPlayerGameMode instance,
         BlockPos pos,
@@ -245,17 +246,19 @@ public class MultiPlayerGameModeMixin {
         return original.call(player, entity, hand, location);
     }
 
-    @WrapOperation(method = "destroyBlock(Lnet/minecraft/core/BlockPos;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"))
+    // NeoForge: the client removes blocks through BlockState#onDestroyedByPlayer
+    @WrapOperation(method = "destroyBlock(Lnet/minecraft/core/BlockPos;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;onDestroyedByPlayer(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;ZLnet/minecraft/world/level/material/FluidState;)Z"))
     private boolean breakBlock(
+        BlockState oldState,
         Level world,
         BlockPos pos,
-        BlockState blockState,
-        int updateFlags,
-        Operation<Boolean> original,
-        @Local BlockState oldState,
-        @Local Block oldBlock
+        Player player,
+        ItemStack toolStack,
+        boolean willHarvest,
+        FluidState fluid,
+        Operation<Boolean> original
     ) {
-        if (oldBlock instanceof BreakControlBlock controlBlock && !controlBlock.onDestroyedByPlayer(
+        if (oldState.getBlock() instanceof BreakControlBlock controlBlock && !controlBlock.onDestroyedByPlayer(
             oldState,
             world,
             pos,
@@ -263,18 +266,6 @@ public class MultiPlayerGameModeMixin {
         )) {
             return false;
         }
-        return original.call(world, pos, blockState, updateFlags);
-    }
-
-    @WrapOperation(method = "continueDestroyBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
-    private SoundType getHitSound(
-        BlockState state,
-        Operation<SoundType> original,
-        @Local(argsOnly = true) BlockPos pos
-    ) {
-        if (state.getBlock() instanceof SoundControlBlock block) {
-            return block.getSoundGroup(minecraft.level, pos);
-        }
-        return original.call(state);
+        return original.call(oldState, world, pos, player, toolStack, willHarvest, fluid);
     }
 }

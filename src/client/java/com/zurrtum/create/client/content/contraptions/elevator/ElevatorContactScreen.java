@@ -1,5 +1,6 @@
 package com.zurrtum.create.client.content.contraptions.elevator;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.google.common.collect.ImmutableList;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.catnip.data.Pair;
@@ -26,7 +27,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
-import org.lwjgl.glfw.GLFW;
 
 public class ElevatorContactScreen extends AbstractSimiScreen {
 
@@ -181,7 +181,7 @@ public class ElevatorContactScreen extends AbstractSimiScreen {
             return true;
         }
         int keyCode = input.key();
-        if (keyCode == GLFW.GLFW_KEY_ENTER) {
+        if (keyCode == InputConstants.KEY_RETURN) {
             confirm();
             return true;
         }

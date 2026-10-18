@@ -1,10 +1,10 @@
 package com.zurrtum.create.mixin;
 
+import java.util.stream.Stream;
+import net.minecraft.server.packs.PackMetadataResources;
 import com.zurrtum.create.foundation.pack.DynamicPack;
 import com.zurrtum.create.foundation.pack.RuntimeDataGenerator;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.metadata.ModMetadata;
+import com.zurrtum.create.neoforge.Platform;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.*;
@@ -32,11 +32,10 @@ public class BuiltInPackSourceMixin {
     @Inject(method = "loadPacks(Ljava/util/function/Consumer;)V", at = @At("TAIL"))
     private void addDataPack(Consumer<Pack> result, CallbackInfo ci) {
         if ((Object) this instanceof ServerPacksSource) {
-            FabricLoader loader = FabricLoader.getInstance();
-            if (!loader.isModLoaded("fabric-api")) {
+            // NeoForge loads Create's own resources and provides the c: convention tags
+            if (false) {
                 String directory = PackType.SERVER_DATA.getDirectory();
-                ModContainer mod = loader.getModContainer(MOD_ID).orElseThrow();
-                List<Path> paths = mod.getRootPaths();
+                List<Path> paths = List.of();
                 addDataPack(
                     result,
                     createInfo("fabric-convention-tags-v2", "Fabric Convention Tags (v2)", "2.15.2+d9a8963096"),
@@ -45,10 +44,9 @@ public class BuiltInPackSourceMixin {
                     directory + "/fabric",
                     "c"
                 );
-                ModMetadata metadata = mod.getMetadata();
                 addDataPack(
                     result,
-                    createInfo(MOD_ID, metadata.getName(), metadata.getVersion().getFriendlyString()),
+                    createInfo(MOD_ID, Platform.getModName(MOD_ID), Platform.getModVersion(MOD_ID)),
                     paths,
                     Component.translatable("advancement.create.root"),
                     directory,
@@ -100,7 +98,7 @@ public class BuiltInPackSourceMixin {
         for (Path path : paths) {
             builder.pushAssetPath(PackType.SERVER_DATA, path.resolve(directory));
         }
-        addDataPack(consumer, true, builder.build(info));
+        addDataPack(consumer, true, builder.build(info).fullResources());
     }
 
     @Unique
@@ -108,14 +106,14 @@ public class BuiltInPackSourceMixin {
         Pack.ResourcesSupplier packFactory = new Pack.ResourcesSupplier() {
             @Override
             @NonNull
-            public PackResources openPrimary(@Nullable PackLocationInfo info) {
+            public PackMetadataResources openMetadata(@Nullable PackLocationInfo info) {
                 return pack;
             }
 
             @Override
             @NonNull
-            public PackResources openFull(@NonNull PackLocationInfo info, @NonNull Metadata metadata) {
-                return pack;
+            public Stream<PackResources> openResources(@NonNull PackLocationInfo info, @NonNull Metadata metadata) {
+                return Stream.of(pack);
             }
         };
         PackSelectionConfig position = new PackSelectionConfig(required, Pack.Position.BOTTOM, false);

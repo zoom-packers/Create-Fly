@@ -42,6 +42,11 @@ class EmptyVertexConsumer implements VertexConsumer {
     }
 
     @Override
+    public VertexConsumer setUv3(float u, float v) {
+        return this;
+    }
+
+    @Override
     public VertexConsumer setNormal(float x, float y, float z) {
         return this;
     }
@@ -88,6 +93,10 @@ class EmptyVertexConsumer implements VertexConsumer {
 
     @Override
     public void putBakedQuad(PoseStack.Pose pose, BakedQuad quad, QuadInstance instance) {
+    }
+
+    @Override
+    public void putBakedQuadWithGlint(PoseStack.Pose pose, BakedQuad quad, QuadInstance instance, PoseStack.Pose sheetedDecalPose) {
     }
 
     @Override

@@ -1,16 +1,18 @@
 package com.zurrtum.create.client.flywheel.backend;
 
-import com.mojang.blaze3d.GpuFormat;
+import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.zurrtum.create.client.flywheel.lib.util.ResourceUtil;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.ARGB;
 import org.jetbrains.annotations.UnknownNullability;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 
@@ -31,8 +33,14 @@ public class NoiseTextures {
             return;
         }
 
-        try (var is = optional.get().open()) {
-            var image = NativeImage.read(NativeImage.Format.LUMINANCE, is);
+        // 26.3 dropped NativeImage.read(Format, InputStream), images are always decoded as RGBA.
+        try (var is = optional.get().open(); var rgba = NativeImage.read(is)) {
+            int[] pixels = rgba.getPixels();
+            var image = new NativeImage(NativeImage.Format.LUMINANCE, rgba.getWidth(), rgba.getHeight(), false);
+            long ptr = image.getPointer();
+            for (int i = 0; i < pixels.length; i++) {
+                MemoryUtil.memPutByte(ptr + i, (byte) ARGB.red(pixels[i]));
+            }
             BLUE_NOISE = new NoiseTexture(image);
         } catch (IOException e) {
 

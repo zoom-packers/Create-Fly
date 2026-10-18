@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.contraptions.actors.seat;
 
+import net.minecraft.util.Prediction;
 import com.google.common.base.Optional;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllEntityTags;
@@ -174,7 +175,7 @@ public class SeatBlock extends Block implements ProperWaterloggedBlock, EntityCo
             ((Leashable) leashed.get()).removeLeash();
             Inventory playerInventory = player.getInventory();
             if (!player.isCreative() || playerInventory.findSlotMatchingItem(stack) == -1) {
-                playerInventory.placeItemBackInInventory(new ItemStack(Items.LEAD));
+                playerInventory.placeItemBackInInventory(new ItemStack(Items.LEAD), Prediction.SERVER_ONLY);
             }
         }
         sitDown(level, pos, leashed.or(player));

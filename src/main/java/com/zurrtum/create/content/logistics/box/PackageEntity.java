@@ -1,5 +1,8 @@
 package com.zurrtum.create.content.logistics.box;
 
+import net.minecraft.world.entity.MoveSimulationType;
+import net.minecraft.core.PositionAndRotation;
+import net.minecraft.world.entity.PositionPath;
 import com.zurrtum.create.AllDataComponents;
 import com.zurrtum.create.AllEntityTypes;
 import com.zurrtum.create.AllSoundEvents;
@@ -120,9 +123,10 @@ public class PackageEntity extends LivingEntity {
         return createLivingAttributes().add(Attributes.MAX_HEALTH, 5.0f).add(Attributes.MOVEMENT_SPEED, 1.0f);
     }
 
+    // 26.3: canSimulateMovement is final and derived from the simulation type
     @Override
-    public boolean canSimulateMovement() {
-        return true;
+    public MoveSimulationType getMoveSimulationType() {
+        return MoveSimulationType.SERVER_AND_CLIENT;
     }
 
     @Override
@@ -151,13 +155,16 @@ public class PackageEntity extends LivingEntity {
 
         Vec3 clientPos = position().add(motion);
         if (isInterpolating()) {
-            clientPos = VecHelper.lerp(Math.min(1, tickCount / 20.0f), clientPos, getInterpolation().position());
+            PositionAndRotation target = getInterpolation().target();
+            if (target != null) {
+                clientPos = VecHelper.lerp(Math.min(1, tickCount / 20.0f), clientPos, target.position());
+            }
         }
         if (tickCount < 5) {
             setPos(clientPos.x, clientPos.y, clientPos.z);
         }
         if (tickCount < 20) {
-            getInterpolation().interpolateTo(clientPos, getYRot(), getXRot());
+            getInterpolation().interpolateTo(PositionPath.of(clientPos), getYRot(), getXRot(), true);
         }
     }
 

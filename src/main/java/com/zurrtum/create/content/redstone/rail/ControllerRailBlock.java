@@ -1,6 +1,5 @@
 package com.zurrtum.create.content.redstone.rail;
 
-import com.mojang.serialization.MapCodec;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.catnip.data.Iterate;
 import com.zurrtum.create.catnip.math.VecHelper;
@@ -36,7 +35,6 @@ public class ControllerRailBlock extends BaseRailBlock implements IWrenchable, M
         Rotation.CLOCKWISE_90, Rotation.CLOCKWISE_180, Rotation.COUNTERCLOCKWISE_90
     };
 
-    public static final MapCodec<ControllerRailBlock> CODEC = simpleCodec(ControllerRailBlock::new);
 
     public ControllerRailBlock(Properties properties) {
         super(true, properties);
@@ -312,8 +310,4 @@ public class ControllerRailBlock extends BaseRailBlock implements IWrenchable, M
         return state.getValue(SHAPE) == RailShape.ASCENDING_SOUTH || state.getValue(SHAPE) == RailShape.ASCENDING_EAST;
     }
 
-    @Override
-    protected MapCodec<? extends BaseRailBlock> codec() {
-        return CODEC;
-    }
 }

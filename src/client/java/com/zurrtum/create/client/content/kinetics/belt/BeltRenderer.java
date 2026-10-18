@@ -380,7 +380,7 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
             ms.pushPose();
         }
         if (!renderUpright || slopeShadowOnly) {
-            ms.mulPose((state.slopeAlongX ? Axis.ZP : Axis.XP).rotationDegrees(slopeAngle));
+            ms.rotate((state.slopeAlongX ? Axis.ZP : Axis.XP).rotationDegrees(slopeAngle));
         }
         if (onSlope) {
             ms.translate(0, slopeOffset, 0);
@@ -405,17 +405,17 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
             );
             Vec3 diff = vectorForOffset.subtract(state.camera);
             float yRot = (float) (Mth.atan2(diff.x, diff.z) + Math.PI);
-            ms.mulPose(Axis.YP.rotation(yRot));
+            ms.rotate(Axis.YP.rotation(yRot));
             ms.translate(0, 0.09375f, 0.0625f);
         }
 
         for (int i = 0; i <= count; i++) {
             ms.pushPose();
 
-            ms.mulPose(Axis.YP.rotationDegrees(item.angle));
+            ms.rotate(Axis.YP.rotationDegrees(item.angle));
             if (!blockItem && !renderUpright) {
                 ms.translate(0, -0.09375, 0);
-                ms.mulPose(Axis.XP.rotationDegrees(90));
+                ms.rotate(Axis.XP.rotationDegrees(90));
             }
 
             if (blockItem && !item.box) {
@@ -434,7 +434,7 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
 
             if (!renderUpright) {
                 if (!blockItem) {
-                    ms.mulPose(Axis.YP.rotationDegrees(10));
+                    ms.rotate(Axis.YP.rotationDegrees(10));
                 }
                 ms.translate(0, blockItem ? 0.015625f : 0.0625f, 0);
             } else {

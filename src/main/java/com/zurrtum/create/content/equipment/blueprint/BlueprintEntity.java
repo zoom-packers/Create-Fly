@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.equipment.blueprint;
 
+import net.minecraft.util.Prediction;
 import com.google.common.cache.Cache;
 import com.zurrtum.create.AllEntityTypes;
 import com.zurrtum.create.AllItems;
@@ -471,7 +472,7 @@ public class BlueprintEntity extends HangingEntity implements SpecialEntityItemR
                     }
                     playerInv.setChanged();
                     for (ItemStack stack : results) {
-                        player.getInventory().placeItemBackInInventory(stack);
+                        player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY);
                     }
                 } else {
                     break;

@@ -1,6 +1,6 @@
 package com.zurrtum.create.content.equipment.toolbox;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.*;
 import com.zurrtum.create.api.entity.FakePlayerHandler;
 import com.zurrtum.create.foundation.block.IBE;
@@ -43,7 +43,6 @@ public class ToolboxBlock extends HorizontalDirectionalBlock implements SimpleWa
 
     protected final DyeColor color;
 
-    public static final MapCodec<ToolboxBlock> CODEC = simpleCodec(p -> new ToolboxBlock(DyeColor.WHITE, p));
 
     public ToolboxBlock(DyeColor color, Properties properties) {
         super(properties);
@@ -123,7 +122,7 @@ public class ToolboxBlock extends HorizontalDirectionalBlock implements SimpleWa
             );
             world.destroyBlock(pos, false);
             if (world.getBlockState(pos) != state) {
-                player.getInventory().placeItemBackInInventory(cloneItemStack);
+                player.getInventory().placeItemBackInInventory(cloneItemStack, Prediction.SERVER_ONLY);
             }
         }
     }
@@ -230,8 +229,4 @@ public class ToolboxBlock extends HorizontalDirectionalBlock implements SimpleWa
         return ItemHelper.calcRedstoneFromBlockEntity(this, pLevel, pPos);
     }
 
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 }

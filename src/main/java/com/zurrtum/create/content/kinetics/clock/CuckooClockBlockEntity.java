@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.kinetics.clock;
 
+import net.minecraft.world.clock.ServerClockManager;
 import com.mojang.serialization.Codec;
 import com.zurrtum.create.AllAdvancements;
 import com.zurrtum.create.AllBlockEntityTypes;
@@ -15,7 +16,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.clock.ClockTimeMarker;
 import net.minecraft.world.clock.ClockTimeMarkers;
-import net.minecraft.world.clock.ServerClockManager.ClockInstance;
 import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.level.Level.ExplosionInteraction;
 import net.minecraft.world.level.block.state.BlockState;
@@ -82,10 +82,10 @@ public class CuckooClockBlockEntity extends KineticBlockEntity {
         if (animationType == Animation.NONE) {
             level.dimensionType().defaultClock().or(() -> level.registryAccess().get(WorldClocks.OVERWORLD))
                 .ifPresent(clock -> {
-                    ClockInstance instance = ((ServerLevel) level).clockManager().getInstance(clock);
+                    ServerClockManager.ServerClockInstance instance = ((ServerLevel) level).clockManager().getInstance(clock);
                     Map<ResourceKey<ClockTimeMarker>, ClockTimeMarker> timeMarkers = instance.timeMarkers;
                     ClockTimeMarker marker = timeMarkers.get(ClockTimeMarkers.NOON);
-                    long totalTicks = instance.totalTicks;
+                    long totalTicks = instance.totalTicks();
                     if (marker != null && marker.occursAt(totalTicks)) {
                         startAnimation(Animation.PIG);
                         return;

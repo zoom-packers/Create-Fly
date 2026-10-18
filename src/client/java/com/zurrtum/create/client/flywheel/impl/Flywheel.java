@@ -1,14 +1,14 @@
 package com.zurrtum.create.client.flywheel.impl;
 
-import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.impl.util.version.StringVersion;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import org.jetbrains.annotations.UnknownNullability;
 
 public final class Flywheel {
     public static final String MOD_ID = "flywheel";
     @UnknownNullability
-    private static final Version version = new StringVersion("1.0.6+create");
+    private static final ArtifactVersion version = new DefaultArtifactVersion("1.0.6+create");
 
     public void onInitializeClient() {
         setupImpl();
@@ -25,7 +25,7 @@ public final class Flywheel {
         ArgumentTypeInfos.BY_CLASS.put(LightSmoothnessArgument.class, LightSmoothnessArgument.INFO);
     }
 
-    public static Version version() {
+    public static ArtifactVersion version() {
         return version;
     }
 }

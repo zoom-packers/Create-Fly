@@ -1,6 +1,5 @@
 package com.zurrtum.create.content.redstone.nixieTube;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -14,7 +13,6 @@ import java.util.Locale;
 
 public class DoubleFaceAttachedBlock extends HorizontalDirectionalBlock {
 
-    public static final MapCodec<DoubleFaceAttachedBlock> CODEC = simpleCodec(DoubleFaceAttachedBlock::new);
 
     public enum DoubleAttachFace implements StringRepresentable {
         FLOOR, WALL, WALL_REVERSED, CEILING;
@@ -77,8 +75,4 @@ public class DoubleFaceAttachedBlock extends HorizontalDirectionalBlock {
         };
     }
 
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 }

@@ -1,0 +1,20 @@
+package com.zurrtum.create.client.neoforge;
+
+import com.zurrtum.create.Create;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+
+/**
+ * NeoForge client entrypoint, replacing the Fabric {@code client} entrypoint
+ * ({@link com.zurrtum.create.client.Create#onInitializeClient()}).
+ */
+@Mod(value = Create.MOD_ID, dist = Dist.CLIENT)
+public class CreateNeoForgeClient {
+    public CreateNeoForgeClient(IEventBus modBus, ModContainer container) {
+        new com.zurrtum.create.client.Create().onInitializeClient();
+        // NeoForge 26.3: reload listeners can only be added through AddClientReloadListenersEvent
+        modBus.addListener(CreateClientReloadListeners::register);
+    }
+}

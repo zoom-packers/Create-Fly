@@ -1,5 +1,6 @@
 package com.zurrtum.create.mixin;
 
+import net.minecraft.util.Prediction;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -63,41 +64,6 @@ public abstract class LivingEntityMixin extends Entity {
         super(type, world);
     }
 
-    @WrapOperation(method = "travelInAir(Lnet/minecraft/world/phys/Vec3;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F"))
-    private float getSlipperiness(Block block, Operation<Float> original, @Local BlockPos posBelow) {
-        if (block instanceof SlipperinessControlBlock controlBlock) {
-            return controlBlock.getSlipperiness(level(), posBelow);
-        }
-        return original.call(block);
-    }
-
-    @WrapOperation(method = "baseTick()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isEyeInFluid(Lnet/minecraft/tags/TagKey;)Z"))
-    private boolean breatheInLava(
-        LivingEntity entity,
-        TagKey<Fluid> tagKey,
-        Operation<Boolean> original,
-        @Local ServerLevel level
-    ) {
-        if (original.call(entity, tagKey)) {
-            return true;
-        }
-        if (entity instanceof ServerPlayer serverPlayer && !serverPlayer.getAbilities().invulnerable && entity.isInLava()) {
-            DivingHelmetItem.breatheInLava(serverPlayer, level);
-        }
-        return false;
-    }
-
-    @WrapOperation(method = "baseTick()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffectUtil;hasWaterBreathing(Lnet/minecraft/world/entity/LivingEntity;)Z"))
-    private boolean canBreatheInWater(LivingEntity mob, Operation<Boolean> original, @Local ServerLevel level) {
-        if (original.call(mob)) {
-            return true;
-        }
-        if (mob instanceof ServerPlayer serverPlayer && !serverPlayer.getAbilities().invulnerable) {
-            return DivingHelmetItem.breatheUnderwater(serverPlayer, level);
-        }
-        return false;
-    }
-
     @Inject(method = "collectEquipmentChanges(Ljava/util/Map;)Ljava/util/Map;", at = @At(value = "INVOKE", target = "Ljava/util/Map;entrySet()Ljava/util/Set;"))
     private void onLivingEquipmentChange(CallbackInfoReturnable<Map<EquipmentSlot, ItemStack>> cir) {
         if ((Object) this instanceof Player player) {
@@ -134,7 +100,7 @@ public abstract class LivingEntityMixin extends Entity {
         }
     }
 
-    @WrapOperation(method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
+    @WrapOperation(method = "drop(Lnet/minecraft/world/item/ItemStack;ZLnet/minecraft/util/Prediction;)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
     private boolean captureDrops(Level world, Entity entity, Operation<Boolean> original) {
         if (AllSynchedDatas.CRUSH_DROP.get(this)) {
             entity.setDeltaMovement(Vec3.ZERO);
@@ -182,7 +148,7 @@ public abstract class LivingEntityMixin extends Entity {
             case 1 -> AllSynchedDatas.CRUSH_DROP.set(this, false);
             case 2 -> AllSynchedDatas.CAPTURE_DROPS.get(this).ifPresent(drops -> {
                 Inventory inventory = ((DeployerPlayer) source.getEntity()).cast().getInventory();
-                drops.forEach(inventory::placeItemBackInInventory);
+                drops.forEach(drop -> inventory.placeItemBackInInventory(drop, Prediction.SERVER_ONLY));
                 AllSynchedDatas.CAPTURE_DROPS.set(this, Optional.empty());
             });
         }
@@ -205,39 +171,10 @@ public abstract class LivingEntityMixin extends Entity {
         return false;
     }
 
-    @Inject(method = "swing(Lnet/minecraft/world/InteractionHand;Z)V", at = @At("HEAD"), cancellable = true)
-    private void swingHand(InteractionHand hand, boolean sendToSwingingEntity, CallbackInfo ci) {
-        ItemStack stack = getItemInHand(hand);
-        if (stack.getItem() instanceof SwingControlItem item) {
-            if (item.onEntitySwing(stack, (LivingEntity) (Object) this, hand)) {
-                ci.cancel();
-            }
-        }
-    }
-
-    @Inject(method = "getVisibilityPercent(Lnet/minecraft/world/entity/Entity;)D", at = @At("HEAD"), cancellable = true)
-    private void getAttackDistanceScalingFactor(Entity targetingEntity, CallbackInfoReturnable<Double> cir) {
+    @Inject(method = "getVisibilityPercent(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;)D", at = @At("HEAD"), cancellable = true)
+    private void getAttackDistanceScalingFactor(ServerLevel serverLevel, Entity targetingEntity, CallbackInfoReturnable<Double> cir) {
         if (CardboardArmorHandler.testForStealth(targetingEntity)) {
             cir.setReturnValue(0.0d);
         }
-    }
-
-    @WrapOperation(method = "handleOnClimbable(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Ljava/lang/Object;)Z"))
-    private boolean isScaffolding(BlockState state, Object block, Operation<Boolean> original) {
-        return original.call(state, block) || state.getBlock() instanceof ScaffoldingControlBlock;
-    }
-
-    @WrapOperation(method = "playBlockFallSound()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType()Lnet/minecraft/world/level/block/SoundType;"))
-    private SoundType getBlockFallSound(
-        BlockState state,
-        Operation<SoundType> original,
-        @Local(ordinal = 0) int x,
-        @Local(ordinal = 1) int y,
-        @Local(ordinal = 2) int z
-    ) {
-        if (state.getBlock() instanceof SoundControlBlock block) {
-            return block.getSoundGroup(level(), new BlockPos(x, y, z));
-        }
-        return original.call(state);
     }
 }

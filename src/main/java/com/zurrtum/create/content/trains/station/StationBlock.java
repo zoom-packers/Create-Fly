@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.trains.station;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllClientHandle;
 import com.zurrtum.create.AllItems;
@@ -169,7 +170,7 @@ public class StationBlock extends Block implements IBE<StationBlockEntity>, Item
                 if (level.isClientSide()) {
                     return InteractionResult.SUCCESS;
                 }
-                player.getInventory().placeItemBackInInventory(autoSchedule.copy());
+                player.getInventory().placeItemBackInInventory(autoSchedule.copy(), Prediction.SERVER_ONLY);
                 station.depotBehaviour.removeHeldItem();
                 station.notifyUpdate();
                 player.level().playSound(

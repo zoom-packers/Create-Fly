@@ -5,11 +5,10 @@ import com.zurrtum.create.AllDataComponents;
 import com.zurrtum.create.AllFluids;
 import com.zurrtum.create.content.fluids.potion.PotionFluidHandler;
 import com.zurrtum.create.infrastructure.component.BottleType;
-import mezz.jei.api.fabric.constants.FabricTypes;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotRichTooltipCallback;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -30,10 +29,9 @@ public class PotionTooltip implements IRecipeSlotRichTooltipCallback {
         if (!lines.isEmpty()) {
             lines.removeFirst();
         }
-        recipeSlotView.getDisplayedIngredient(FabricTypes.FLUID_STACK).ifPresent(ingredient -> {
-            FluidVariant variant = ingredient.getFluidVariant();
-            if (variant.isOf(AllFluids.POTION)) {
-                DataComponentMap components = variant.getComponents();
+        recipeSlotView.getDisplayedIngredient(NeoForgeTypes.FLUID_STACK).ifPresent(ingredient -> {
+            if (ingredient.getFluid() == AllFluids.POTION) {
+                DataComponentMap components = ingredient.getComponents();
                 PotionContents contents = components.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
                 BottleType bottleType = components.getOrDefault(
                     AllDataComponents.POTION_FLUID_BOTTLE_TYPE,

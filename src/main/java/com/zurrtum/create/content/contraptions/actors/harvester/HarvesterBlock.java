@@ -1,6 +1,5 @@
 package com.zurrtum.create.content.contraptions.actors.harvester;
 
-import com.mojang.serialization.MapCodec;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.content.contraptions.actors.AttachedActorBlock;
 import com.zurrtum.create.foundation.block.IBE;
@@ -9,7 +8,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class HarvesterBlock extends AttachedActorBlock implements IBE<HarvesterBlockEntity> {
 
-    public static final MapCodec<HarvesterBlock> CODEC = simpleCodec(HarvesterBlock::new);
 
     public HarvesterBlock(Properties p_i48377_1_) {
         super(p_i48377_1_);
@@ -25,8 +23,4 @@ public class HarvesterBlock extends AttachedActorBlock implements IBE<HarvesterB
         return AllBlockEntityTypes.HARVESTER;
     }
 
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 }

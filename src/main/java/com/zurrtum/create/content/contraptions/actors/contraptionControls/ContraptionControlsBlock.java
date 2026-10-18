@@ -1,6 +1,5 @@
 package com.zurrtum.create.content.contraptions.actors.contraptionControls;
 
-import com.mojang.serialization.MapCodec;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllShapes;
 import com.zurrtum.create.AllSoundEvents;
@@ -23,7 +22,6 @@ import org.jspecify.annotations.Nullable;
 
 public class ContraptionControlsBlock extends ControlsBlock implements IBE<ContraptionControlsBlockEntity> {
 
-    public static final MapCodec<ContraptionControlsBlock> CODEC = simpleCodec(ContraptionControlsBlock::new);
 
     public ContraptionControlsBlock(Properties pProperties) {
         super(pProperties);
@@ -94,8 +92,4 @@ public class ContraptionControlsBlock extends ControlsBlock implements IBE<Contr
         return AllBlockEntityTypes.CONTRAPTION_CONTROLS;
     }
 
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
-    }
 }

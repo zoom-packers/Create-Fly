@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.kinetics.millstone;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllShapes;
 import com.zurrtum.create.content.kinetics.base.KineticBlock;
@@ -83,12 +84,12 @@ public class MillstoneBlock extends KineticBlock implements IBE<MillstoneBlockEn
                         continue;
                     }
                     emptyOutput = false;
-                    player.getInventory().placeItemBackInInventory(stackInSlot);
+                    player.getInventory().placeItemBackInInventory(stackInSlot, Prediction.SERVER_ONLY);
                     inv.setItem(slot, ItemStack.EMPTY);
                 }
 
                 if (emptyOutput) {
-                    player.getInventory().placeItemBackInInventory(inv.getItem(0));
+                    player.getInventory().placeItemBackInInventory(inv.getItem(0), Prediction.SERVER_ONLY);
                     inv.setItem(0, ItemStack.EMPTY);
                 }
 

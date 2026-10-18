@@ -4,6 +4,7 @@ import com.zurrtum.create.AllItems;
 import com.zurrtum.create.AllRecipeTypes;
 import com.zurrtum.create.client.compat.jei.CreateCategory;
 import com.zurrtum.create.client.compat.jei.JeiClientPlugin;
+import com.zurrtum.create.client.compat.jei.JeiFluids;
 import com.zurrtum.create.client.compat.jei.renderer.TwoIconRenderer;
 import com.zurrtum.create.client.foundation.gui.AllGuiTextures;
 import com.zurrtum.create.client.foundation.gui.render.SpoutRenderState;
@@ -17,15 +18,12 @@ import com.zurrtum.create.infrastructure.fluids.BottleFluidInventory;
 import com.zurrtum.create.infrastructure.fluids.BucketFluidInventory;
 import com.zurrtum.create.infrastructure.fluids.FluidItemInventory;
 import com.zurrtum.create.infrastructure.fluids.FluidStack;
-import mezz.jei.api.fabric.constants.FabricTypes;
-import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.types.IRecipeType;
-import net.fabricmc.fabric.api.recipe.v1.ingredient.DefaultCustomIngredients;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -41,6 +39,7 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeMap;
+import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.joml.Matrix3x2f;
 
@@ -58,13 +57,10 @@ public class SpoutFillingCategory extends CreateCategory<RecipeHolder<FillingRec
     public static List<RecipeHolder<FillingRecipe>> getRecipes(
         RecipeMap preparedRecipes,
         Stream<ItemStack> itemStream,
-        Stream<IJeiFluidIngredient> fluidStream
+        Stream<net.neoforged.neoforge.fluids.FluidStack> fluidStream
     ) {
         List<RecipeHolder<FillingRecipe>> recipes = new ArrayList<>(preparedRecipes.byType(AllRecipeTypes.FILLING));
-        List<FluidStack> fluids = fluidStream.map(ingredient -> {
-            FluidVariant variant = ingredient.getFluidVariant();
-            return new FluidStack(variant.getFluid(), ingredient.getAmount(), variant.getComponentsPatch());
-        }).toList();
+        List<FluidStack> fluids = fluidStream.map(JeiFluids::fromJei).toList();
         MutableInt i = new MutableInt();
         itemStream.forEach(stack -> {
             if (PotionFluidHandler.isPotionItem(stack)) {
@@ -111,7 +107,7 @@ public class SpoutFillingCategory extends CreateCategory<RecipeHolder<FillingRec
                             );
                             Ingredient ingredient =
                                 stack.getComponentsPatch().isEmpty() ? Ingredient.of(stack.getItem()) :
-                                    DefaultCustomIngredients.components(stack);
+                                    DataComponentIngredient.of(false, stack.getComponentsPatch(), stack.getItem());
                             recipes.add(new RecipeHolder<>(
                                 ResourceKey.create(Registries.RECIPE, id),
                                 new FillingRecipe(
@@ -167,9 +163,8 @@ public class SpoutFillingCategory extends CreateCategory<RecipeHolder<FillingRec
     ) {
         AllGuiTextures.JEI_SHADOW.render(graphics, 62, 57);
         AllGuiTextures.JEI_DOWN_ARROW.render(graphics, 126, 29);
-        recipeSlotsView.findSlotByName("fluid").flatMap(view -> view.getDisplayedIngredient(FabricTypes.FLUID_STACK))
+        recipeSlotsView.findSlotByName("fluid").flatMap(view -> view.getDisplayedIngredient(NeoForgeTypes.FLUID_STACK))
             .ifPresent(fluidIngredient -> {
-                FluidVariant fluidVariant = fluidIngredient.getFluidVariant();
                 int i = idGenerator.getAndIncrement();
                 if (i >= MAX) {
                     idGenerator.set(0);
@@ -177,8 +172,8 @@ public class SpoutFillingCategory extends CreateCategory<RecipeHolder<FillingRec
                 graphics.guiRenderState.addPicturesInPictureState(new SpoutRenderState(
                     i,
                     new Matrix3x2f(graphics.pose()),
-                    fluidVariant.getFluid(),
-                    fluidVariant.getComponentsPatch(),
+                    fluidIngredient.getFluid(),
+                    fluidIngredient.getComponentsPatch(),
                     75,
                     1,
                     0

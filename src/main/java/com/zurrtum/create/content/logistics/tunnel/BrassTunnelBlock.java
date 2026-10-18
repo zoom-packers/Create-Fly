@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.logistics.tunnel;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -59,7 +60,7 @@ public class BrassTunnelBlock extends BeltTunnelBlock {
                     return InteractionResult.SUCCESS;
                 }
                 for (ItemStack itemStack : stacksOfGroup) {
-                    player.getInventory().placeItemBackInInventory(itemStack.copy());
+                    player.getInventory().placeItemBackInInventory(itemStack.copy(), Prediction.SERVER_ONLY);
                 }
                 level.playSound(
                     null,

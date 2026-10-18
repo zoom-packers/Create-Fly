@@ -1,7 +1,7 @@
 package com.zurrtum.create.content.kinetics.deployer;
 
 import com.mojang.authlib.GameProfile;
-import net.fabricmc.fabric.api.entity.FakePlayer;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;

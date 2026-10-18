@@ -3,10 +3,8 @@ package com.zurrtum.create.client.vanillin;
 import com.zurrtum.create.catnip.config.Builder;
 import com.zurrtum.create.catnip.config.ConfigBase;
 import com.zurrtum.create.client.vanillin.config.*;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.metadata.CustomValue;
-import net.fabricmc.loader.api.metadata.ModMetadata;
+import com.zurrtum.create.neoforge.Platform;
+import net.neoforged.neoforgespi.language.IModInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,22 +22,19 @@ public class VanillinConfig {
         var blockEntities = new ArrayList<VisualOverride>();
         var entities = new ArrayList<VisualOverride>();
 
-        for (ModContainer container : FabricLoader.getInstance().getAllMods()) {
-            ModMetadata meta = container.getMetadata();
-            var modid = meta.getId();
+        for (IModInfo meta : Platform.getMods()) {
+            var modid = meta.getModId();
 
-            if (meta.containsCustomValue(VANILLIN_OVERRIDES)) {
-                CustomValue overridesValue = meta.getCustomValue(VANILLIN_OVERRIDES);
+            if (meta.getModProperties().containsKey(VANILLIN_OVERRIDES)) {
+                Object overridesValue = meta.getModProperties().get(VANILLIN_OVERRIDES);
 
-                if (overridesValue.getType() != CustomValue.CvType.OBJECT) {
+                if (!(overridesValue instanceof Map<?, ?> overrides)) {
                     Vanillin.CONFIG_LOGGER.warn(
                         "Mod '{}' attempted to override options with an invalid value, ignoring",
                         modid
                     );
                     continue;
                 }
-
-                var overrides = overridesValue.getAsObject();
 
                 readSection(blockEntities, modid, overrides, "block_entities", "block entity");
                 readSection(entities, modid, overrides, "entities", "entity");
@@ -52,7 +47,7 @@ public class VanillinConfig {
     private static void readSection(
         List<VisualOverride> dst,
         String modid,
-        CustomValue.CvObject overrides,
+        Map<?, ?> overrides,
         String sectionName,
         String singular
     ) {
@@ -62,7 +57,7 @@ public class VanillinConfig {
 
         var section = overrides.get(sectionName);
 
-        if (section.getType() != CustomValue.CvType.OBJECT) {
+        if (!(section instanceof Map<?, ?> sectionMap)) {
             Vanillin.CONFIG_LOGGER.warn(
                 "Mod '{}' attempted to override {} with an invalid value, ignoring",
                 modid,
@@ -71,10 +66,10 @@ public class VanillinConfig {
             return;
         }
 
-        for (Map.Entry<String, CustomValue> entry : section.getAsObject()) {
+        for (Map.Entry<?, ?> entry : sectionMap.entrySet()) {
             var value = entry.getValue();
-            var key = entry.getKey();
-            if (value.getType() != CustomValue.CvType.STRING) {
+            var key = String.valueOf(entry.getKey());
+            if (!(value instanceof String valueString)) {
                 Vanillin.CONFIG_LOGGER.warn(
                     "Mod '{}' attempted to override {} '{}' with an invalid value, ignoring",
                     modid,
@@ -83,8 +78,6 @@ public class VanillinConfig {
                 );
                 continue;
             }
-
-            var valueString = value.getAsString();
 
             var parsed = VisualOverrideValue.parse(valueString);
 

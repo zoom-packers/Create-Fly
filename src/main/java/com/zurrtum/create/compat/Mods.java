@@ -1,6 +1,6 @@
 package com.zurrtum.create.compat;
 
-import net.fabricmc.loader.api.FabricLoader;
+import com.zurrtum.create.neoforge.Platform;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
@@ -20,7 +20,7 @@ public enum Mods {
 
     Mods() {
         id = name().toLowerCase(Locale.ROOT);
-        loaded = FabricLoader.getInstance().isModLoaded(id);
+        loaded = Platform.isModLoaded(id);
     }
 
     /**

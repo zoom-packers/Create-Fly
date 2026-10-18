@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.processing.basin;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllShapes;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
@@ -168,7 +169,7 @@ public class BasinBlock extends Block implements IBE<BasinBlockEntity>, IWrencha
                     if (stackInSlot.isEmpty()) {
                         continue;
                     }
-                    player.getInventory().placeItemBackInInventory(stackInSlot);
+                    player.getInventory().placeItemBackInInventory(stackInSlot, Prediction.SERVER_ONLY);
                     inv.setItem(slot, ItemStack.EMPTY);
                     success = true;
                 }

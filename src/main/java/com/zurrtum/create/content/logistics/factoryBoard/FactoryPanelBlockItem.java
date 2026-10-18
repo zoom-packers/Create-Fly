@@ -45,15 +45,11 @@ public class FactoryPanelBlockItem extends LogisticallyLinkedBlockItem {
         return super.place(pContext);
     }
 
+    // NeoForge 26.3: BlockItem#updateCustomBlockEntityTag is static now; fix the stack before it is applied
     @Override
-    protected boolean updateCustomBlockEntityTag(
-        BlockPos pos,
-        Level level,
-        @Nullable Player player,
-        ItemStack stack,
-        BlockState state
-    ) {
-        return super.updateCustomBlockEntityTag(pos, level, player, fixCtrlCopiedStack(stack), state);
+    protected boolean placeBlock(BlockPlaceContext context, BlockState blockState) {
+        fixCtrlCopiedStack(context.getItemInHand());
+        return super.placeBlock(context, blockState);
     }
 
     public static ItemStack fixCtrlCopiedStack(ItemStack stack) {

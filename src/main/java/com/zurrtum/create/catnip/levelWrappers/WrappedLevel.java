@@ -1,5 +1,6 @@
 package com.zurrtum.create.catnip.levelWrappers;
 
+import net.neoforged.neoforge.entity.PartEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -18,14 +19,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkSource;
@@ -92,7 +91,7 @@ public class WrappedLevel extends Level {
     }
 
     @Override
-    public Collection<EnderDragonPart> dragonParts() {
+    public Collection<? extends PartEntity<?>> dragonParts() {
         return level.dragonParts();
     }
 
@@ -304,15 +303,7 @@ public class WrappedLevel extends Level {
         return level.registryAccess();
     }
 
-    @Override
-    public PotionBrewing potionBrewing() {
-        return level.potionBrewing();
-    }
 
-    @Override
-    public FuelValues fuelValues() {
-        return level.fuelValues();
-    }
 
     @Override
     public void updateNeighbourForOutputSignal(BlockPos p_175666_1_, Block p_175666_2_) {

@@ -1,9 +1,9 @@
 package com.zurrtum.create.client.mixin;
 
+import net.minecraft.world.item.component.SwingAnimation;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.zurrtum.create.AllPackets;
 import com.zurrtum.create.catnip.data.WorldAttached;
 import com.zurrtum.create.client.Create;
@@ -47,12 +47,10 @@ import com.zurrtum.create.client.content.trains.CameraDistanceModifier;
 import com.zurrtum.create.client.content.trains.GlobalRailwayManagerClient;
 import com.zurrtum.create.client.content.trains.TrainHUD;
 import com.zurrtum.create.client.content.trains.entity.TrainRelocatorClient;
-import com.zurrtum.create.client.content.trains.schedule.hat.TrainHatInfoReloadListener;
 import com.zurrtum.create.client.content.trains.track.CurvedTrackInteraction;
 import com.zurrtum.create.client.content.trains.track.TrackBlockOutline;
 import com.zurrtum.create.client.content.trains.track.TrackPlacementClient;
 import com.zurrtum.create.client.content.trains.track.TrackTargetingClient;
-import com.zurrtum.create.client.flywheel.backend.compile.FlwProgramsReloader;
 import com.zurrtum.create.client.flywheel.impl.BackendManagerImpl;
 import com.zurrtum.create.client.flywheel.impl.FlwImpl;
 import com.zurrtum.create.client.flywheel.impl.task.FlwTaskExecutor;
@@ -67,7 +65,6 @@ import com.zurrtum.create.client.foundation.blockEntity.behaviour.scrollValue.Sc
 import com.zurrtum.create.client.foundation.sound.SoundScapes;
 import com.zurrtum.create.client.foundation.utility.CameraAngleAnimationService;
 import com.zurrtum.create.client.foundation.utility.ServerSpeedProvider;
-import com.zurrtum.create.client.model.obj.ObjLoader;
 import com.zurrtum.create.client.ponder.Ponder;
 import com.zurrtum.create.client.ponder.foundation.PonderIndex;
 import com.zurrtum.create.client.ponder.foundation.PonderTooltipHandler;
@@ -86,11 +83,9 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -103,10 +98,6 @@ public abstract class MinecraftMixin {
     @Shadow
     @Nullable
     public ClientLevel level;
-
-    @Shadow
-    @Final
-    private ReloadableResourceManager resourceManager;
 
     @Shadow
     @Nullable
@@ -128,17 +119,6 @@ public abstract class MinecraftMixin {
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/resources/ReloadableResourceManager;createReload(Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Ljava/util/List;)Lnet/minecraft/server/packs/resources/ReloadInstance;"))
     private void flywheel$onBeginInitialResourceReload(GameConfig gameConfig, CallbackInfo ci) {
         FlwImpl.freezeRegistries();
-    }
-
-    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/Window;updateRawMouseInput(Z)V"))
-    private void register(GameConfig gameConfig, CallbackInfo ci) {
-        if (RenderSystem.getDevice().getDeviceInfo().backendName().equals("OpenGL")) {
-            resourceManager.registerReloadListener(FlwProgramsReloader.INSTANCE);
-        }
-        resourceManager.registerReloadListener(ObjLoader.INSTANCE);
-        resourceManager.registerReloadListener(Create.RESOURCE_RELOAD_LISTENER);
-        resourceManager.registerReloadListener(TrainHatInfoReloadListener.LISTENER);
-        resourceManager.registerReloadListener(Ponder.RESOURCE_RELOAD_LISTENER);
     }
 
     @Inject(method = "onResourceLoadFinished(Lnet/minecraft/client/GameLoadCookie;)V", at = @At("HEAD"))
@@ -222,7 +202,7 @@ public abstract class MinecraftMixin {
         SymmetryHandlerClient.onClientTick(mc);
     }
 
-    @Inject(method = "renderFrame(Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;render(Lnet/minecraft/client/DeltaTracker;Z)V"))
+    @Inject(method = "renderFrame(Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;render()V"))
     private void render(boolean advanceGameTime, CallbackInfo ci) {
         TurntableHandler.gameRenderFrame((Minecraft) (Object) this);
     }
@@ -244,7 +224,7 @@ public abstract class MinecraftMixin {
         ) || FactoryPanelConnectionHandler.onRightClick(mc) || ChainConveyorConnectionHandler.onRightClick(mc) || TrainRelocatorClient.onClicked(
             mc) || ChainConveyorInteractionHandler.onUse(mc) || PackagePortTargetSelectionHandler.onUse(mc) || ChainPackageInteractionHandler.onUse(
             mc))) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             ci.cancel();
         } else if (ContraptionHandlerClient.rightClickingOnContraptionsGetsHandledLocally(mc, hand)) {
             ci.cancel();
@@ -272,7 +252,7 @@ public abstract class MinecraftMixin {
     private void doAttack(CallbackInfoReturnable<Boolean> cir) {
         Minecraft mc = (Minecraft) (Object) this;
         if (CurvedTrackInteraction.onClickInput(mc, true) || Create.GLUE_HANDLER.onMouseInput(mc, true)) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             cir.setReturnValue(false);
         }
     }

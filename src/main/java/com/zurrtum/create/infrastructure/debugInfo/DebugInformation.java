@@ -6,8 +6,7 @@ import com.zurrtum.create.Create;
 import com.zurrtum.create.infrastructure.debugInfo.element.DebugInfoSection;
 import com.zurrtum.create.infrastructure.debugInfo.element.InfoElement;
 import com.zurrtum.create.infrastructure.debugInfo.element.InfoEntry;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.metadata.ModMetadata;
+import com.zurrtum.create.neoforge.Platform;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
@@ -78,18 +77,16 @@ public class DebugInformation {
     }
 
     public static String getVersionOfMod(String id) {
-        return FabricLoader.getInstance().getModContainer(id).map(mod -> mod.getMetadata().getVersion().toString())
-            .orElse("None");
+        return Platform.getMod(id).map(mod -> mod.getVersion().toString()).orElse("None");
     }
 
     public static Collection<InfoElement> listAllOtherMods() {
         List<InfoElement> mods = new ArrayList<>();
-        FabricLoader.getInstance().getAllMods().forEach(mod -> {
-            ModMetadata meta = mod.getMetadata();
-            String id = meta.getId();
-            if (!id.equals(Create.MOD_ID) && !id.equals("fabric-api") && !id.equals("minecraft") && !id.equals(
+        Platform.getMods().forEach(meta -> {
+            String id = meta.getModId();
+            if (!id.equals(Create.MOD_ID) && !id.equals("neoforge") && !id.equals("minecraft") && !id.equals(
                 "flywheel")) {
-                String name = meta.getName();
+                String name = meta.getDisplayName();
                 String version = meta.getVersion().toString();
                 mods.add(new InfoEntry(name, version));
             }

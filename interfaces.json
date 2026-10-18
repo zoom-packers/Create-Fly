@@ -1,0 +1,8 @@
+{
+  "net/minecraft/world/Container": [
+    "com/zurrtum/create/neoforge/CreateContainerExtension"
+  ],
+  "net/minecraft/world/WorldlyContainer": [
+    "com/zurrtum/create/infrastructure/items/WorldlyContainerExtension"
+  ]
+}

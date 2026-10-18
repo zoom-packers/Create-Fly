@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.logistics.tableCloth;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.*;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
 import com.zurrtum.create.api.contraption.transformable.TransformableBlockEntity;
@@ -232,7 +233,7 @@ public class TableClothBlockEntity extends SmartBlockEntity implements Transform
                 if (player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
                     player.setItemInHand(InteractionHand.MAIN_HAND, prevListItem);
                 } else {
-                    player.getInventory().placeItemBackInInventory(prevListItem);
+                    player.getInventory().placeItemBackInInventory(prevListItem, Prediction.SERVER_ONLY);
                 }
             }
 
@@ -284,7 +285,7 @@ public class TableClothBlockEntity extends SmartBlockEntity implements Transform
         if (player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
             player.setItemInHand(InteractionHand.MAIN_HAND, newListItem);
         } else {
-            player.getInventory().placeItemBackInInventory(newListItem);
+            player.getInventory().placeItemBackInInventory(newListItem, Prediction.SERVER_ONLY);
         }
 
         return InteractionResult.SUCCESS;

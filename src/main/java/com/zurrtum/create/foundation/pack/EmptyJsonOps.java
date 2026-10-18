@@ -1,5 +1,7 @@
 package com.zurrtum.create.foundation.pack;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.HolderOwner;
@@ -13,7 +15,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.Optional;
 
-public class EmptyJsonOps extends RegistryOps<JsonElement> implements HolderOwner<Item> {
+public class EmptyJsonOps extends RegistryOps<JsonElement> implements HolderGetter<Item> {
     public static final EmptyJsonOps INSTANCE = new EmptyJsonOps();
 
     private EmptyJsonOps() {
@@ -27,7 +29,17 @@ public class EmptyJsonOps extends RegistryOps<JsonElement> implements HolderOwne
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> Optional<HolderOwner<E>> owner(ResourceKey<? extends Registry<? extends E>> registryRef) {
-        return Optional.of((HolderOwner<E>) this);
+    public <E> Optional<HolderGetter<E>> getter(ResourceKey<? extends Registry<? extends E>> registryRef) {
+        return Optional.of((HolderGetter<E>) this);
+    }
+
+    @Override
+    public Optional<Holder.Reference<Item>> get(ResourceKey<Item> id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<HolderSet.Named<Item>> get(TagKey<Item> id) {
+        return Optional.empty();
     }
 }

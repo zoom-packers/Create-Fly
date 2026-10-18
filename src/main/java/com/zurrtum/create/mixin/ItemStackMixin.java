@@ -1,5 +1,7 @@
 package com.zurrtum.create.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -23,36 +25,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
-    @Inject(method = "useOn(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;useOn(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult;"))
-    private void cacheState(
-        UseOnContext context,
-        CallbackInfoReturnable<InteractionResult> cir,
-        @Local Item usedItem,
-        @Share("place") LocalRef<BlockPlaceContext> place
-    ) {
-        if (usedItem instanceof BlockItem) {
-            Level world = context.getLevel();
-            if (!world.isClientSide()) {
-                place.set(new BlockPlaceContext(context));
-            }
-        }
-    }
 
-    @Inject(method = "useOn(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/InteractionResult$Success;wasItemInteraction()Z"))
-    private void useOnBlock(
-        UseOnContext context,
-        CallbackInfoReturnable<InteractionResult> cir,
-        @Local Player player,
-        @Share("place") LocalRef<BlockPlaceContext> place
-    ) {
-        BlockPlaceContext placementContext = place.get();
-        if (placementContext != null) {
+    // NeoForge: the server places items through CommonHooks#onPlaceItemIntoWorld
+    @WrapOperation(method = "useOn(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/common/CommonHooks;onPlaceItemIntoWorld(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult;"))
+    private InteractionResult useOnBlock(UseOnContext context, Operation<InteractionResult> original) {
+        BlockPlaceContext placementContext = ((ItemStack) (Object) this).getItem() instanceof BlockItem ? new BlockPlaceContext(context) : null;
+        boolean consumable = ((ItemStack) (Object) this).components.has(DataComponents.CONSUMABLE);
+        InteractionResult result = original.call(context);
+        Player player = context.getPlayer();
+        if (placementContext != null && player != null && result instanceof InteractionResult.Success success && success.wasItemInteraction()) {
             ServerLevel world = (ServerLevel) context.getLevel();
             BlockPos pos = placementContext.getClickedPos();
             SuperGlueHandler.glueListensForBlockPlacement(world, player, pos);
-            if (!context.getItemInHand().components.has(DataComponents.CONSUMABLE)) {
+            if (!consumable) {
                 SymmetryHandler.onBlockPlaced(world, player, pos, placementContext);
             }
         }
+        return result;
     }
 }

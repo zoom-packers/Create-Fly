@@ -13,7 +13,7 @@ import com.zurrtum.create.client.ponder.Ponder;
 import com.zurrtum.create.client.ponder.enums.PonderGuiTextures;
 import com.zurrtum.create.client.ponder.foundation.PonderIndex;
 import com.zurrtum.create.client.ponder.foundation.PonderTag;
-import net.fabricmc.loader.api.FabricLoader;
+import com.zurrtum.create.neoforge.Platform;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.renderer.Rect2i;
@@ -100,8 +100,7 @@ public class PonderTagIndexScreen extends AbstractPonderScreen {
         int xOffset = (int) (width * 0.5) + 4;
 
         Map.Entry<String, List<PonderTag>> entry = sortedModTags.get(currentPage);
-        String modName = FabricLoader.getInstance().getModContainer(entry.getKey())
-            .map(mod -> mod.getMetadata().getName()).orElseGet(entry::getKey);
+        String modName = Platform.getModName(entry.getKey());
         //TODO
         //                .orElse(ConfigScreen.toHumanReadable(modId));
         List<PonderTag> tags = entry.getValue();

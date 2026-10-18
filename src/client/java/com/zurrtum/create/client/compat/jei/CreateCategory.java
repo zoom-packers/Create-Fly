@@ -15,9 +15,8 @@ import com.zurrtum.create.foundation.fluid.FluidStackIngredient;
 import com.zurrtum.create.infrastructure.fluids.FluidStack;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.fabricmc.fabric.api.recipe.v1.ingredient.CustomIngredient;
-import net.fabricmc.fabric.api.recipe.v1.ingredient.FabricIngredient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.util.context.ContextMap;
@@ -25,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public abstract class CreateCategory<T> implements IRecipeCategory<T> {
         if (count == 1) {
             return getStacks(ingredient, context);
         }
-        CustomIngredient customIngredient = ((FabricIngredient) ingredient).getCustomIngredient();
+        ICustomIngredient customIngredient = ingredient.getCustomIngredient();
         if (customIngredient == null) {
             return ingredient.values.stream().map(entry -> new ItemStack(entry, count)).toList();
         }
@@ -57,7 +57,7 @@ public abstract class CreateCategory<T> implements IRecipeCategory<T> {
     }
 
     public static List<ItemStack> getStacks(Ingredient ingredient, Supplier<ContextMap> context) {
-        CustomIngredient customIngredient = ((FabricIngredient) ingredient).getCustomIngredient();
+        ICustomIngredient customIngredient = ingredient.getCustomIngredient();
         if (customIngredient == null) {
             return ingredient.values.stream().map(ItemStack::new).toList();
         }
@@ -90,9 +90,10 @@ public abstract class CreateCategory<T> implements IRecipeCategory<T> {
     }
 
     public static IRecipeSlotBuilder addFluidSlot(IRecipeLayoutBuilder builder, int x, int y, FluidStack stack) {
-        int amount = stack.getAmount();
+        // NeoForge: JEI fluid amounts are millibuckets
+        long amount = JeiFluids.toJeiAmount(stack.getAmount());
         IRecipeSlotBuilder slot = builder.addOutputSlot(x, y).setFluidRenderer(amount, false, 16, 16)
-            .add(stack.getFluid(), amount, stack.getComponentChanges());
+            .add(NeoForgeTypes.FLUID_STACK, JeiFluids.toJei(stack));
         if (stack.isOf(AllFluids.POTION)) {
             slot.addRichTooltipCallback(POTION);
         }
@@ -105,7 +106,8 @@ public abstract class CreateCategory<T> implements IRecipeCategory<T> {
         int y,
         FluidIngredient fluidIngredient
     ) {
-        int amount = fluidIngredient.amount();
+        // NeoForge: JEI fluid amounts are millibuckets
+        long amount = JeiFluids.toJeiAmount(fluidIngredient.amount());
         IRecipeSlotBuilder slot = builder.addInputSlot(x, y).setFluidRenderer(amount, false, 16, 16);
         DataComponentPatch components = DataComponentPatch.EMPTY;
         if (fluidIngredient instanceof FluidStackIngredient stackIngredient) {

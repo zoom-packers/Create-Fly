@@ -1,5 +1,8 @@
 package com.zurrtum.create.content.kinetics.chainConveyor;
 
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.AllBlockEntityTypes;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.AllShapes;
@@ -82,8 +85,8 @@ public class ChainConveyorBlock extends KineticBlock implements IBE<ChainConveyo
 
     @Override
     public void playerDestroy(
-        Level level,
-        Player player,
+        ServerLevel level,
+        ServerPlayer player,
         BlockPos pos,
         BlockState state,
         @Nullable BlockEntity blockEntity,
@@ -109,7 +112,7 @@ public class ChainConveyorBlock extends KineticBlock implements IBE<ChainConveyo
                     int chainCost = ChainConveyorBlockEntity.getChainCost(targetPos);
                     while (chainCost > 0) {
                         player.getInventory()
-                            .placeItemBackInInventory(new ItemStack(Items.IRON_CHAIN, Math.min(chainCost, 64)));
+                            .placeItemBackInInventory(new ItemStack(Items.IRON_CHAIN, Math.min(chainCost, 64)), Prediction.SERVER_ONLY);
                         chainCost -= 64;
                     }
                 }

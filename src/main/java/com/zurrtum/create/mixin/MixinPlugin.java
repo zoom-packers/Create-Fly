@@ -1,7 +1,6 @@
 package com.zurrtum.create.mixin;
 
 import com.zurrtum.create.Create;
-import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -16,24 +15,18 @@ public class MixinPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         mixins = new ArrayList<>();
-        FabricLoader loader = FabricLoader.getInstance();
-        Create.Lazy = loader.isModLoaded("fabric-api");
+        // NeoForge: registration happens in vanilla bootstrap, as on Fabric without Fabric API
+        Create.Lazy = false;
         //        if (FabricLoader.getInstance().isModLoaded("architectury")) {
         //            mixins.add("ArchitecturyMixin");
         //        }
-        if (Create.Lazy) {
-            mixins.add("RegistriesMixin");
-        } else {
+        // NeoForge prefixes modded registry directories with the namespace; Create's data uses bare paths
+        mixins.add("RegistriesMixin");
+        {
             mixins.add("CreativeModeTabMixin");
             mixins.add("CreativeModeTabsMixin");
             mixins.add("SavedDataStorageMixin");
-            mixins.add("IngredientMixin");
-        }
-        if (loader.isModLoaded("fabric-networking-api-v1")) {
-            mixins.add("MenuProviderMixin");
-        }
-        if (loader.isModLoaded("fabric-resource-loader-v1")) {
-            mixins.add("ReloadListenerMixin");
+            // NeoForge: IngredientMixin is replaced by neoforge:components (DataComponentIngredient)
         }
     }
 

@@ -1,6 +1,5 @@
 package com.zurrtum.create.content.logistics.crate;
 
-import com.mojang.serialization.MapCodec;
 import com.zurrtum.create.AllShapes;
 import com.zurrtum.create.content.equipment.wrench.IWrenchable;
 import com.zurrtum.create.foundation.block.WrenchableDirectionalBlock;
@@ -14,7 +13,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CrateBlock extends WrenchableDirectionalBlock implements IWrenchable {
 
-    public static final MapCodec<CrateBlock> CODEC = simpleCodec(CrateBlock::new);
 
     public CrateBlock(Properties p_i48415_1_) {
         super(p_i48415_1_);
@@ -30,8 +28,4 @@ public class CrateBlock extends WrenchableDirectionalBlock implements IWrenchabl
         return false;
     }
 
-    @Override
-    protected MapCodec<? extends DirectionalBlock> codec() {
-        return CODEC;
-    }
 }

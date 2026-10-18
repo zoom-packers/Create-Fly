@@ -1,5 +1,6 @@
 package com.zurrtum.create.content.trains.station;
 
+import net.minecraft.util.Prediction;
 import com.zurrtum.create.*;
 import com.zurrtum.create.api.behaviour.BlockEntityBehaviour;
 import com.zurrtum.create.api.contraption.transformable.TransformableBlockEntity;
@@ -485,7 +486,7 @@ public class StationBlockEntity extends SmartBlockEntity implements Transformabl
             return;
         }
         if (sender != null && sender.getMainHandItem().isEmpty()) {
-            sender.getInventory().placeItemBackInInventory(schedule);
+            sender.getInventory().placeItemBackInInventory(schedule, Prediction.SERVER_ONLY);
             return;
         }
 
