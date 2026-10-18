@@ -50,10 +50,18 @@ The goal is a small, mechanical diff against upstream, so that rebasing onto new
   - `-PserverOnly` runs without the client source set.
   - `-PdisableMixins=A,B` skips the named client mixins (dev-only bisecting aid in the client `MixinPlugin`).
 - **Client smoke test:** `./gradlew runClientSmoke` starts a client with the dev-only `src/devclient` helper mod
-  (`create_devclient`, never in the jar). It screenshots the title screen, creates a flat world, builds the
-  water wheel → shaft → press setup from `CreateGameTests`, logs `SMOKE PASS`/`SMOKE FAIL` and quits by itself.
-  Screenshots land in `run-smoke/screenshots`. `runClientSmokeVanilla` places the same vanilla blocks without Create
-  loaded, as a rendering control. Both open a game window.
+  (`create_devclient`, never in the jar). It screenshots the title screen, creates a flat world, runs the chosen
+  scenarios, logs one `SMOKE RESULT <check> PASS|FAIL` line per check plus a `SMOKE SUMMARY`, and quits by itself.
+  Screenshots land in `run-smoke/screenshots`. It opens a game window, so leave the window alone while it runs.
+  - `-PsmokeScenarios=press,contraption,oit,ponder,jei` (default `press`):
+    - `press`: the `CreateGameTests` water wheel → shaft → press setup
+    - `contraption`: a creative motor turning a mechanical bearing with a stair block
+    - `oit`: the scene with improved transparency on
+    - `ponder`: the water wheel Ponder scene
+    - `jei`: the creative inventory with JEI's overlay, then JEI's recipes for the iron sheet
+  - `-PwithJei` and `-PwithSodium` (Sodium + Iris) add those mods to the dev runs.
+  - `-PsmokeTag=name-` prefixes the screenshot names; `-PsmokeProps=k=v,...` adds system properties.
+  - `runClientSmokeVanilla` places the same vanilla blocks without Create loaded, as a rendering control.
 
 ## Loader and entrypoints
 
@@ -177,6 +185,16 @@ Other mixins were retargeted to NeoForge's patched code:
   cutout pipelines crashed (`Render pass color attachment count must match pipeline color target state count`)
   whenever they were drawn outside Flywheel, for example with Flywheel's backend set to `OFF`. The smoke test logs
   any non-vanilla pipeline without a color target.
+- **Structure NBT needs data fixing.** Block states in structure NBT are `{id, properties}` now, and
+  `StructureTemplate#load` doesn't fix old data. Vanilla's `TemplateSource` runs `DataFixTypes.STRUCTURE` first;
+  Ponder's `PonderSceneRegistry#loadSchematic` and `SchematicItem#loadSchematic` didn't. Ponder's schematics are at
+  data version 2975, so every block read as air and Ponder scenes showed only their shadow, outlines and text. Both
+  loaders now data-fix first, which also keeps players' older schematic files loading.
+- **GUI draws run at the end of the frame.** `GuiRenderer` records picture-in-picture blits during `prepare` and
+  draws them later. Create's cached GUI textures (`catnip/gui/render/GpuTexture`, used by the Ponder, JEI and
+  item-transform renderers) were closed mid-frame when an element was cleared or resized, which crashed with
+  `Texture view Sampler0 (UI Item Transform texture) has been closed!`, for example when opening Ponder.
+  `GpuTexture#close` now queues the texture, and `closePending` runs at the start of each client tick.
 - **Mod construction order.** NeoForge constructs mods before `Minecraft` exists, while Fabric's client entrypoint runs
   after it. `SchematicHandler` therefore creates its `ToolSelectionScreen` on first use.
 - **NeoForge overloads.** `ModelManager#discoverModelDependencies` gained a standalone-models parameter, and the vanilla
@@ -268,13 +286,22 @@ Verified on 2026-10-18 (NeoForge 26.3.0.89, Java 25.0.1, Windows):
 
   The client config can only be exercised by `runClient`.
 - **Full ZP5 pack.** With the 136 server and both-side jars from `pack/mods` (Not Enough Crashes held out) in `run/mods`, `runGameTestServer` boots, and `water_wheel_drives_press` passes at tick 134. The 74 failures are the pack's known baseline (72 Easy Mob Farm, 2 Enderite mod: the game-test mock player isn't a `ServerPlayer`). The parent session's full-pack server boot found the section-move crash above.
-- **Client (`runClientSmoke`, 2026-10-18, OpenGL on an RTX 5090).** It reaches the title screen, and all client
-  mixins apply. In a new flat world the water wheel turns at 8 RPM, the press runs at 8 RPM and the depot holds an
-  iron sheet (`SMOKE PASS`). The screenshots show the wheel turning, the press head, the iron sheet on the depot, the
-  glass channel and the water. This holds with Flywheel's default backend and with the backend set to `OFF`.
-- **Not checked on the client:** Ponder scenes, the schematic and toolbox UIs, trains and contraptions, JEI, Sodium
-  and Iris, improved transparency (OIT), and the Vulkan backend. The `TODO(neoforge 26.3)` rendering items listed
-  above are still open.
+- **Client (`runClientSmoke`, 2026-10-18, OpenGL on an RTX 5090).** All client mixins apply. Every check passes,
+  with screenshots for each:
+  - `title`
+  - `press`: wheel 8 RPM, press 8 RPM, iron sheet on the depot; the glass channel and water render
+  - `contraption`: the bearing assembles and turns a stair block; the contraption entity exists on both sides
+  - `oit`: improved transparency on; glass and water still render
+  - `ponder`: the water wheel scene, with its base plate, water wheel, shaft, gauge and text
+  - `jei`: JEI's overlay and creative tabs, and Create's Pressing category with the animated press
+  Variants:
+  - Flywheel backend `OFF`: `press` passes and renders the same.
+  - Sodium 0.9.3-beta.1 + Iris 1.11.7 (`-PwithSodium`, no shader pack): `press`, `contraption` and `ponder` pass and
+    render correctly. Iris's deprecated `logoFile` raises a NeoForge loading-warnings screen, which the smoke test
+    dismisses.
+- **Not checked on the client:** trains (assembling one needs track targeting and station assembly, which the smoke
+  test can't script reliably yet), the schematic and toolbox UIs, Iris with a shader pack, and the Vulkan backend.
+  The `TODO(neoforge 26.3)` rendering items listed above are still open.
 
 Upstream data problems that 26.3 makes fatal: advancements that pointed at recipes that don't exist
 (`crafting///tree_fertilizer`, `crafting/materials/copper_ingot`, `crafting/materials/copper_nugget`) were removed.

@@ -14,10 +14,17 @@ import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public record GpuTexture(int width, int height, com.mojang.renderpearl.api.textures.GpuTexture texture,
                          GpuTextureView textureView, com.mojang.renderpearl.api.textures.GpuTexture depthTexture,
                          GpuTextureView depthTextureView) {
+    // 26.3: GuiRenderer records blits during prepare and draws them at the end of the frame, so a texture closed
+    // mid-frame (an element cleared or resized after its blit was added) is still referenced by that frame's draws.
+    // close() therefore only queues the texture; closePending() runs at the start of each client tick, between frames.
+    private static final Queue<GpuTexture> PENDING_CLOSE = new ConcurrentLinkedQueue<>();
+
     public static GpuTexture create(int size) {
         return create(size, size, 1);
     }
@@ -85,6 +92,17 @@ public record GpuTexture(int width, int height, com.mojang.renderpearl.api.textu
     }
 
     public void close() {
+        PENDING_CLOSE.add(this);
+    }
+
+    public static void closePending() {
+        GpuTexture pending;
+        while ((pending = PENDING_CLOSE.poll()) != null) {
+            pending.closeNow();
+        }
+    }
+
+    private void closeNow() {
         texture.close();
         textureView.close();
         depthTexture.close();

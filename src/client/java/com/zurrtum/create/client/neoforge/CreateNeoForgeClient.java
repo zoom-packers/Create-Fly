@@ -1,10 +1,12 @@
 package com.zurrtum.create.client.neoforge;
 
 import com.zurrtum.create.Create;
+import com.zurrtum.create.client.catnip.gui.render.GpuTexture;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
@@ -18,5 +20,6 @@ public class CreateNeoForgeClient {
         // NeoForge 26.3: reload listeners can only be added through AddClientReloadListenersEvent
         modBus.addListener(CreateClientReloadListeners::register);
         NeoForge.EVENT_BUS.addListener(CreateClientInput::onKey);
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre event) -> GpuTexture.closePending());
     }
 }

@@ -22,7 +22,7 @@ repositories {
             }
         }
     }
-    addGroup("https://maven.blamejared.com", "mezz.jei")
+    addGroup("https://maven.blamejared.com", "mezz.jei", "net.mezzdev.config")
     addGroup("https://api.modrinth.com/maven", "maven.modrinth")
 }
 
@@ -131,6 +131,7 @@ configurations {
     localRuntime
     runtimeClasspath.extendsFrom localRuntime
     clientRuntimeClasspath.extendsFrom localRuntime
+    devclientRuntimeClasspath.extendsFrom localRuntime
 }
 
 neoForge {
@@ -182,6 +183,13 @@ neoForge {
             sourceSet = sourceSets.devclient
             gameDirectory = project.file('run-smoke')
             systemProperty 'create.clientSmoke', 'true'
+            // -PsmokeScenarios=press,contraption,oit,ponder,jei (default press); -PsmokeTag=name- prefixes screenshots
+            systemProperty 'create.clientSmoke.scenarios', project.findProperty('smokeScenarios') ?: 'press'
+            systemProperty 'create.clientSmoke.tag', project.findProperty('smokeTag') ?: ''
+            // -PsmokeProps=key=value,key2=value2 adds extra system properties (debugging aid)
+            if (project.hasProperty('smokeProps')) {
+                project.property('smokeProps').toString().split(',').each { String kv -> def p = kv.split('=', 2); systemProperty p[0], p.length > 1 ? p[1] : 'true' }
+            }
             loadedMods = [mods."${modId}", mods.create_devclient]
         }
         // Control for clientSmoke: the same vanilla blocks without Create loaded
@@ -226,6 +234,15 @@ dependencies {
     jarJarCompileOnly "maven.modrinth:sodium:${project.sodium_version}"
     clientCompileOnly "maven.modrinth:sodium:${project.sodium_version}"
     clientCompileOnly "maven.modrinth:iris:${project.iris_version}"
+    devclientCompileOnly "mezz.jei:jei-${project.jei_version}"
+    // Optional mods for the dev runs: -PwithJei, -PwithSodium (Sodium + Iris)
+    if (project.hasProperty('withJei')) {
+        localRuntime "mezz.jei:jei-${project.jei_version}"
+    }
+    if (project.hasProperty('withSodium')) {
+        localRuntime "maven.modrinth:sodium:${project.sodium_version}"
+        localRuntime "maven.modrinth:iris:${project.iris_version}"
+    }
 }
 
 var extractJarJarCompileOnly = tasks.register('extractJarJarCompileOnly', Sync) {
