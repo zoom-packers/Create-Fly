@@ -167,6 +167,16 @@ Other mixins were retargeted to NeoForge's patched code:
   `#extension GL_ARB_separate_shader_objects`, and every `in`/`out` needs `layout(location = N)`. Vertex inputs are
   numbered in vertex format order (`ENTITY`: Position, Color, UV0, UV1, UV2, Normal). Ponder's `entity_block` and
   Create's `glowing_shader` were rewritten; with the old ones the first resource reload fails and the client quits.
+- **Render passes bind their target once.** renderpearl binds a pass's framebuffer when the pass opens, not per draw.
+  Flywheel draws in the middle of the main pass (`LevelRendererMixin#flywheel$beforeSolid`), and
+  `MaterialRenderState#reset` used to bind framebuffer 0 afterwards. Everything later in that pass then went to the
+  default framebuffer: translucent terrain (glass and water, which is translucent in 26.3), clouds, weather, and
+  items on depots. `reset` now rebinds the framebuffer that was bound before `setupFrameBuffer`.
+- **Pipelines start with no color targets.** `RenderPipeline.Builder` has zero color targets unless one is set, and
+  vanilla sets `ColorTargetState.DEFAULT` explicitly. Ponder's `entity_block` snippets didn't, so their solid and
+  cutout pipelines crashed (`Render pass color attachment count must match pipeline color target state count`)
+  whenever they were drawn outside Flywheel, for example with Flywheel's backend set to `OFF`. The smoke test logs
+  any non-vanilla pipeline without a color target.
 - **Mod construction order.** NeoForge constructs mods before `Minecraft` exists, while Fabric's client entrypoint runs
   after it. `SchematicHandler` therefore creates its `ToolSelectionScreen` on first use.
 - **NeoForge overloads.** `ModelManager#discoverModelDependencies` gained a standalone-models parameter, and the vanilla
@@ -260,17 +270,11 @@ Verified on 2026-10-18 (NeoForge 26.3.0.89, Java 25.0.1, Windows):
 - **Full ZP5 pack.** With the 136 server and both-side jars from `pack/mods` (Not Enough Crashes held out) in `run/mods`, `runGameTestServer` boots, and `water_wheel_drives_press` passes at tick 134. The 74 failures are the pack's known baseline (72 Easy Mob Farm, 2 Enderite mod: the game-test mock player isn't a `ServerPlayer`). The parent session's full-pack server boot found the section-move crash above.
 - **Client (`runClientSmoke`, 2026-10-18, OpenGL on an RTX 5090).** It reaches the title screen, and all client
   mixins apply. In a new flat world the water wheel turns at 8 RPM, the press runs at 8 RPM and the depot holds an
-  iron sheet (`SMOKE PASS`). The wheel, shaft, press and depot render, the wheel turns visibly, and the press head shows.
-- **Open client bugs:**
-  - **Cutout and translucent chunk geometry is not drawn while Create is loaded.** Glass and water are missing from
-    the screen, although the client level has the blocks. `runClientSmokeVanilla` draws the same scene correctly,
-    so a Create client mixin causes it. Switching off single mixins is hard because several depend on each other.
-  - **With Flywheel's backend `OFF`**, the solid feature phase crashes: `Render pass color attachment count must match
-    pipeline color target state count` (`PreparedRenderType.draw`). A Create render type uses a pipeline whose
-    color targets don't match the main pass, probably one built from an OIT snippet. This is likely related to the
-    bug above.
-  - Items on depots were not visible in the screenshots. Not checked further.
-  - The `TODO(neoforge 26.3)` rendering items listed above are still open.
+  iron sheet (`SMOKE PASS`). The screenshots show the wheel turning, the press head, the iron sheet on the depot, the
+  glass channel and the water. This holds with Flywheel's default backend and with the backend set to `OFF`.
+- **Not checked on the client:** Ponder scenes, the schematic and toolbox UIs, trains and contraptions, JEI, Sodium
+  and Iris, improved transparency (OIT), and the Vulkan backend. The `TODO(neoforge 26.3)` rendering items listed
+  above are still open.
 
 Upstream data problems that 26.3 makes fatal: advancements that pointed at recipes that don't exist
 (`crafting///tree_fertilizer`, `crafting/materials/copper_ingot`, `crafting/materials/copper_nugget`) were removed.

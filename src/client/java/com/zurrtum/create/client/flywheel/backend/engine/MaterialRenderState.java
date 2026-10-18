@@ -22,6 +22,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL33C;
 
 import java.util.Collections;
@@ -181,7 +182,13 @@ public final class MaterialRenderState {
         resetWriteMask();
     }
 
+    // 26.3: renderpearl binds the pass target once, when a render pass opens, and doesn't rebind it per draw. Flywheel
+    // draws in the middle of the main pass, so it has to give back the framebuffer it found, not 0, or everything
+    // drawn after it in that pass (translucent terrain, clouds, weather) goes to the default framebuffer.
+    private static int previousFrameBuffer;
+
     public static void setupFrameBuffer() {
+        previousFrameBuffer = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
         RenderTarget target = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         GlDevice device = GlCompat.device();
         int fbo = device.frameBufferCache().getFbo(
@@ -193,7 +200,8 @@ public final class MaterialRenderState {
     }
 
     private static void resetFrameBuffer() {
-        GlStateManager._glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        GlStateManager._glBindFramebuffer(GL_FRAMEBUFFER, previousFrameBuffer);
+        previousFrameBuffer = 0;
     }
 
     private static void resetTexture() {

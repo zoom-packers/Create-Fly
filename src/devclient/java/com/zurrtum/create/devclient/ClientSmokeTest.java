@@ -84,6 +84,11 @@ public final class ClientSmokeTest {
                 if (screen instanceof TitleScreen && ++ticks == 100) {
                     shot(mc, "smoke-1-title.png");
                     LOGGER.info("SMOKE title screen reached at tick {}", totalTicks);
+                    net.minecraft.client.renderer.RenderPipelines.PIPELINES_BY_LOCATION.forEach((id, pipeline) -> {
+                        if (!id.getNamespace().equals("minecraft") && pipeline.getColorTargetStates().isEmpty()) {
+                            LOGGER.error("SMOKE pipeline {} has no color target", id);
+                        }
+                    });
                     stage = Stage.LOADING;
                     ticks = 0;
                     LevelSettings settings = new LevelSettings(
@@ -115,6 +120,7 @@ public final class ClientSmokeTest {
                 }
                 if (ticks == 70) {
                     shot(mc, "smoke-2-running.png");
+                    logModels(mc);
                     LOGGER.info(
                         "SMOKE client sees glass {}, water {}, wheel {}",
                         mc.level.getBlockState(origin.offset(1, 4, 2)),
@@ -239,6 +245,23 @@ public final class ClientSmokeTest {
             set(level, o.offset(3, 3, 2), AllBlocks.SHAFT.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X));
             set(level, o.offset(4, 3, 2), AllBlocks.MECHANICAL_PRESS.defaultBlockState().setValue(HorizontalKineticBlock.HORIZONTAL_FACING, Direction.EAST));
             set(level, o.offset(4, 1, 2), AllBlocks.DEPOT.defaultBlockState());
+    }
+
+    /** Which chunk layer and sprite the client-side models put glass and water in. */
+    private static void logModels(Minecraft mc) {
+        var models = mc.getModelManager();
+        java.util.List<net.minecraft.client.renderer.block.dispatch.BlockStateModelPart> parts = new java.util.ArrayList<>();
+        models.getBlockStateModelSet().get(Blocks.GLASS.defaultBlockState()).collectParts(net.minecraft.util.RandomSource.create(0), parts);
+        StringBuilder sb = new StringBuilder();
+        for (var part : parts) {
+            for (Direction d : Direction.values()) {
+                for (var quad : part.getQuads(d)) {
+                    sb.append(' ').append(d).append(':').append(quad.materialInfo().layer()).append('/').append(quad.materialInfo().sprite().contents().name());
+                }
+            }
+        }
+        var water = models.getFluidStateModelSet().get(net.minecraft.world.level.material.Fluids.WATER.defaultFluidState());
+        LOGGER.info("SMOKE glass parts {} quads:{}; water model layer {} still {}", parts.size(), sb, water.layer(), water.stillMaterial().sprite().contents().name());
     }
 
     private static void logChannel(ServerLevel level, BlockPos o, String when) {
