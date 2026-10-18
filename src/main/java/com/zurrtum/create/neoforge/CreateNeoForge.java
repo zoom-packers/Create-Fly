@@ -68,8 +68,13 @@ public class CreateNeoForge {
      * NeoForge fires EnteringSection where upstream's PersistentEntitySectionManagerCallbackMixin injected. That mixin
      * used an implicit {@code @Local long}, which is ambiguous in NeoForge's patched {@code onMove} (it already has
      * {@code newSectionPos} and {@code oldSectionKey}) and crashed the server the first time an entity changed section.
+     * NeoForge also fires the event from the client's TransientEntitySectionManager, which upstream's mixin never
+     * targeted, and the handler casts to ServerLevel, so client levels are skipped.
      */
     private static void enterSection(EntityEvent.EnteringSection event) {
+        if (event.getEntity().level().isClientSide()) {
+            return;
+        }
         CarriageEntityHandler.onEntityEnterSection(event.getEntity(), event.getPackedOldPos(), event.getPackedNewPos());
     }
 

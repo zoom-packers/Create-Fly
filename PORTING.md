@@ -102,6 +102,7 @@ NeoForge patches the vanilla calls that some of upstream's mixins targeted. For 
 | `CopycatBlock` | `getLightEmission` / `hasDynamicLightEmission` | `LightCoordsUtilMixin` |
 | `SyncedBlockEntity` | `handleUpdateTag` / `onDataPacket(Connection, ValueInput)` | `LevelChunkMixin#handleUpdateTag`, `ClientPacketListenerMixin#onDataPacket` |
 | Diving helmet | `LivingBreatheEvent` (`CreateNeoForge#breathe`) | `LivingEntityMixin#breatheInLava`, `#canBreatheInWater` |
+| Train carriages leaving ticking chunks | `EntityEvent.EnteringSection` (`CreateNeoForge#enterSection`, server levels only; NeoForge also fires it on the client) | `PersistentEntitySectionManagerCallbackMixin` (its implicit `@Local long` is ambiguous in NeoForge's patched `onMove` and crashed the server the first time an entity changed section) |
 
 Other mixins were retargeted to NeoForge's patched code:
 - `ItemStackMixin` (server placement goes through `CommonHooks#onPlaceItemIntoWorld`)
@@ -233,13 +234,14 @@ Verified on 2026-10-18 (NeoForge 26.3.0.89, Java 25.0.1, Windows):
   under a water channel turns at 8 RPM and drives a mechanical press through a shaft. The press turns an iron ingot on
   a depot into an iron sheet, at tick 134.
 - **Runtime mixins.** With `-PmixinDebug` (`mixin.debug.verbose`), 60 Create mixins applied on the dedicated server with
-  no warnings or failures. The other ten are not loaded by a game-test server:
+  no warnings or failures. The other nine are not loaded by a game-test server:
   - `ConfigurationProtocolsMixin`, `ServerConfigurationPacketListenerImplMixin` and `GameProtocolsMixin` (networking)
-  - `ExperimentalRedstoneWireEvaluatorMixin`, `PersistentEntitySectionManagerCallbackMixin`, `RailStateMixin`,
+  - `ExperimentalRedstoneWireEvaluatorMixin`, `RailStateMixin`,
     `StartAttackingMixin`, `SynchedEntityDataBuilderMixin` and `TooltipContextMixin`
   - `ArchitecturyMixin`, which is disabled upstream
 
   The client config can only be exercised by `runClient`.
+- **Full ZP5 pack.** With the 136 server and both-side jars from `pack/mods` (Not Enough Crashes held out) in `run/mods`, `runGameTestServer` boots, and `water_wheel_drives_press` passes at tick 134. The 74 failures are the pack's known baseline (72 Easy Mob Farm, 2 Enderite mod: the game-test mock player isn't a `ServerPlayer`). The parent session's full-pack server boot found the section-move crash above.
 - **Client.** `runClient` has not been run yet; the user asked to hold off. Still to check on the client:
   - the title screen (client mixins apply, Flywheel and Ponder reload listeners)
   - a world where a water wheel drives a mechanical press
