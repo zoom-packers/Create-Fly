@@ -422,7 +422,8 @@ public interface ContainerExtension extends Iterable<ItemStack> {
     default ItemStack removeMaxSize(ItemStack stack, Optional<Integer> max) {
         PatchedDataComponentMap components = stack.components;
         components.ensureMapOwnership();
-        components.patch.remove(DataComponents.MAX_STACK_SIZE, max);
+        // 26.3: patch maps hold raw component values, not Optionals (an Optional here broke ItemStack saving)
+        components.patch.remove(DataComponents.MAX_STACK_SIZE, max.orElseThrow());
         return stack;
     }
 
@@ -430,7 +431,8 @@ public interface ContainerExtension extends Iterable<ItemStack> {
     default void setMaxSize(ItemStack stack, Optional<Integer> max) {
         PatchedDataComponentMap components = stack.components;
         components.ensureMapOwnership();
-        components.patch.put(DataComponents.MAX_STACK_SIZE, max);
+        // 26.3: patch maps hold raw component values, not Optionals (an Optional here broke ItemStack saving)
+        components.patch.put(DataComponents.MAX_STACK_SIZE, max.orElseThrow());
     }
 
     default Stream<ItemStack> stream(@Nullable Direction side) {

@@ -292,6 +292,14 @@ Verified on 2026-10-18 (NeoForge 26.3.0.89, Java 25.0.1, Windows):
   passes all tests. The real test is `create:water_wheel_drives_press` (`neoforge/CreateGameTests`): a small water wheel
   under a water channel turns at 8 RPM and drives a mechanical press through a shaft. The press turns an iron ingot on
   a depot into an iron sheet, at tick 134.
+- **Fluid and item saving (fixed 2026-10-18).** 26.3 changed `PatchedDataComponentMap.patch` and
+  `DataComponentPatch.map` to hold raw component values (with a package-private `Removed` marker) instead of
+  `Optional`s. Create's `FluidInventory.setMaxSize` and `ContainerExtension.setMaxSize` still put an `Optional<Integer>`
+  for `create:fluid_max_capacity` / `minecraft:max_stack_size` into the patch, so encoding a stored stack threw
+  `ClassCastException: Optional cannot be cast to Integer` and every fluid-holding block entity (basin, spout, drain,
+  tank, ...) lost its contents on chunk save. Both now store `max.orElseThrow()`. `create:basin_fluid_survives_save`
+  puts 4050 droplets of lava in a basin, saves it with `saveWithFullMetadata`, loads it back with `loadWithComponents`
+  and round-trips the stack through `FluidStack.OPTIONAL_PACKET_CODEC`. It fails with the old code and passes now.
 - **Runtime mixins.** With `-PmixinDebug` (`mixin.debug.verbose`), 60 Create mixins applied on the dedicated server with
   no warnings or failures. The other nine are not loaded by a game-test server:
   - `ConfigurationProtocolsMixin`, `ServerConfigurationPacketListenerImplMixin` and `GameProtocolsMixin` (networking)
