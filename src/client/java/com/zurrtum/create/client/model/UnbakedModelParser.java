@@ -11,9 +11,7 @@ import com.google.gson.internal.bind.TreeTypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.math.Transformation;
 import com.zurrtum.create.client.model.obj.ObjLoader;
-import com.zurrtum.create.neoforge.Platform;
 import net.minecraft.client.resources.model.UnbakedModel;
-import net.minecraft.client.resources.model.cuboid.CuboidModel;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Type;
@@ -25,9 +23,10 @@ public class UnbakedModelParser {
     }
 
     public static class Deserializer implements JsonDeserializer<UnbakedModel>, TypeAdapterFactory {
-        private static final TypeToken<? extends UnbakedModel> NEXT_TYPE =
-            Platform.isModLoaded("fabric-model-loading-api-v1") ? TypeToken.get(UnbakedModel.class) :
-                TypeToken.get(CuboidModel.class);
+        // NeoForge: CuboidModel.GSON always has NeoForge's UnbakedModel deserializer, which reads every registered
+        // "loader". Upstream picked CuboidModel unless Fabric's model loading API was present, and checked for it by its
+        // Fabric id, which never matches FFAPI's mod id, so every other mod's custom model loader was skipped.
+        private static final TypeToken<? extends UnbakedModel> NEXT_TYPE = TypeToken.get(UnbakedModel.class);
         private final Gson gson;
         private @Nullable TypeAdapter<?> cached;
 
