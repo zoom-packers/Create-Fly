@@ -230,6 +230,14 @@ as upstream's `AllTransfer.register()`. Other mods' handlers are wrapped as Crea
 - **Trinkets goggles.** Not ported. `TODO`: Curios support.
 - **Potion fluid tint for other mods.** Fabric's `FluidVariantRenderHandler` is not ported. Create's own renderers tint correctly.
 - **NeoForge enhanced block lighting** is replaced by Create's lighter in `ModelBlockRendererMixin`, as upstream does with vanilla's.
+- **`ModelBlockRendererMixin` overwrites `tesselateBlock` and `tesselateFlat`.** It runs at priority 900 so other
+  client mods can still inject into them; Mixin refuses injections into a method overwritten at equal or higher
+  priority. In the full pack, Fusion's `ModelBlockRendererMixin` wraps `getOffset(pos)` and crashed at the first chunk.
+  The overwrites also follow NeoForge's patched bodies call for call, so injections still find their targets:
+  - `lighter.reset()`
+  - the per-part ambient-occlusion config and `BlockStateModelPart#ambientOcclusion()`
+  - the 5-argument `shouldRenderFace`, which carries NeoForge's face-hiding hooks
+  The only other `@Overwrite`s target Create's own classes, and Create has no `@Redirect`s on vanilla code.
 - **Shade overrides.** Model faces whose shade override is not `up` are treated as unshaded.
 - **Flywheel and glint.** Flywheel item models drop the enchantment glint overlay (`ModelUtil` TODO).
 - **Flywheel OIT** always composites into the main render target.

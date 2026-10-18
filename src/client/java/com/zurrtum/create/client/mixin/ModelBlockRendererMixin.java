@@ -19,6 +19,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.config.NeoForgeClientConfig;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -27,7 +28,10 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.List;
 
-@Mixin(ModelBlockRenderer.class)
+// NeoForge: priority below the default 1000 so other mods can still inject into the methods overwritten here. Mixin
+// refuses injections into a method @Overwrite-ten at equal or higher priority, and Fusion (connected textures) wraps
+// blockState.getOffset(pos) in tesselateBlock, which crashed the client the first time a chunk rendered.
+@Mixin(value = ModelBlockRenderer.class, priority = 900)
 public abstract class ModelBlockRendererMixin {
     @Shadow
     @Final
@@ -84,9 +88,11 @@ public abstract class ModelBlockRendererMixin {
         BakedQuad quad
     );
 
+    // NeoForge: the 5-argument overload carries NeoForge's face-hiding hooks; the 4-argument one is deprecated
     @Shadow
     protected abstract boolean shouldRenderFace(
         BlockAndTintGetter level,
+        BlockPos pos,
         BlockState state,
         Direction direction,
         BlockPos neighborPos
@@ -117,11 +123,21 @@ public abstract class ModelBlockRendererMixin {
             model.collectParts(level, pos, blockState, random, parts);
         }
         if (!parts.isEmpty()) {
+            // NeoForge: same order of calls as NeoForge's patched method (lighter reset, per-part AO config, the part's
+            // ambient-occlusion TriState), so other mods' injections into tesselateBlock still find their targets
+            lighter.reset();
             try {
                 Vec3 offset = blockState.getOffset(pos);
-                if (ambientOcclusion && (blockState.getBlock() instanceof CopycatBlock block ?
-                    block.getLuminance(level, pos) : blockState.getLightEmission(level, pos)) == 0 && parts.getFirst()
-                    .useAmbientOcclusion()) {
+                boolean perPartAO = NeoForgeClientConfig.INSTANCE.handleAmbientOcclusionPerPart.getAsBoolean();
+                boolean useAO = ambientOcclusion && (perPartAO || switch (parts.getFirst().ambientOcclusion()) {
+                    case TRUE -> true;
+                    case DEFAULT -> (blockState.getBlock() instanceof CopycatBlock block ? block.getLuminance(level, pos) : blockState.getLightEmission(
+                        level,
+                        pos
+                    )) == 0;
+                    case FALSE -> false;
+                });
+                if (useAO) {
                     if (output instanceof VanillinMeshEmitterManager meshEmitter) {
                         meshEmitter.prepareForModelLayer(true);
                     }
@@ -188,7 +204,7 @@ public abstract class ModelBlockRendererMixin {
                     if (!culledQuads.isEmpty()) {
                         BlockPos relativePos = scratchPos.setWithOffset(pos, direction);
                         if (!validCacheForDirection) {
-                            shouldRenderFace = shouldRenderFace(level, state, direction, relativePos);
+                            shouldRenderFace = shouldRenderFace(level, pos, state, direction, relativePos);
                             cacheValid |= cacheMask;
                             if (shouldRenderFace) {
                                 shouldRenderFaceCache |= cacheMask;
