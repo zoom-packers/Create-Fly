@@ -4,6 +4,7 @@ import com.google.common.graph.ElementOrder;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import com.mojang.blaze3d.platform.ClipboardManager;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
 import com.zurrtum.create.catnip.animation.LerpedFloat.Chaser;
@@ -950,7 +951,7 @@ public class PonderUI extends AbstractPonderScreen {
     @Override
     public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         if (identifyMode && hoveredBlockPos != null && PonderIndex.editingModeActive()) {
-            if (copiedBlockPos != null && click.button() == 1) {
+            if (copiedBlockPos != null && click.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
                 clipboardHelper.setClipboard(
                     "util.select().fromTo(" + copiedBlockPos.getX() + ", " + copiedBlockPos.getY() + ", " + copiedBlockPos.getZ() + ", " + hoveredBlockPos.getX() + ", " + hoveredBlockPos.getY() + ", " + hoveredBlockPos.getZ() + ")"
                 );

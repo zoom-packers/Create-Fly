@@ -1,6 +1,7 @@
 package com.zurrtum.create.client.content.trains.schedule;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.zurrtum.create.AllDataComponents;
 import com.zurrtum.create.AllSchedules;
 import com.zurrtum.create.catnip.animation.LerpedFloat;
@@ -1081,7 +1082,7 @@ public class ScheduleScreen extends AbstractSimiContainerScreen<ScheduleMenu> {
             return super.keyPressed(input);
         }
         int pKeyCode = input.key();
-        boolean hitEnter = getFocused() instanceof EditBox && (pKeyCode == 257 || pKeyCode == 335);
+        boolean hitEnter = getFocused() instanceof EditBox && (pKeyCode == InputConstants.KEY_RETURN || pKeyCode == InputConstants.KEY_NUMPADENTER);
         boolean hitE = getFocused() == null || minecraft.options.keyInventory.matches(input);
         if (hitEnter) {
             onEditorClose.accept(true);

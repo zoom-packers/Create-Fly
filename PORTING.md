@@ -163,6 +163,13 @@ Other mixins were retargeted to NeoForge's patched code:
   mechanically. 26.3 also has a Vulkan backend. Flywheel's instancing and indirect backends need OpenGL, so `GlCompat`
   falls back to Flywheel's `off` backend on Vulkan.
 - **Input.** GLFW was replaced by SDL3. Key constants are now `InputConstants` SDL scancodes; cursor calls use LWJGL `SDLMouse`.
+  Mouse buttons are SDL codes too: `MOUSE_BUTTON_LEFT` = 1, `MIDDLE` = 2, `RIGHT` = 3, where GLFW used 0/2/1.
+  `AbstractWidget#isValidClickButton` only accepts 1. Every raw GLFW number in the client code now uses `InputConstants`:
+  - mouse buttons: the radial wrench and toolbox menus, the clipboard, the schematic and schematic-and-quill
+    handlers, and Ponder's block selector
+  - the synthetic `MouseButtonInfo(0, 0)` clicks that focus edit boxes, which vanilla ignored
+  - key codes: Escape, Enter, keypad Enter, Backspace, Delete, the arrows, Page Up/Down, Home and End, in the
+    clipboard, schedule, stock keeper, elevator contact and schematic prompt screens
 - **First-person rendering.** `ItemInHandRenderer` became `FirstPersonHandsAndItemsRenderer`, which works from render
   states. The zapper, potato cannon and extendo-grip handlers now take `PlayerRenderState` /
   `FirstPersonHandsAndItemsRenderState`.
