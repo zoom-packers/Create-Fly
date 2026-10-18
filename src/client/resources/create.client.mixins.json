@@ -36,7 +36,6 @@
     "IntegratedServerMixin",
     "ItemInHandRendererMixin",
     "ItemStackMixin",
-    "KeyboardHandlerMixin",
     "KeyMappingMixin",
     "LevelChunkMixin",
     "LevelExtractorMixin",

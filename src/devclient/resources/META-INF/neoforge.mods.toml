@@ -1,0 +1,9 @@
+modLoader = "javafml"
+loaderVersion = "*"
+license = "CC0-1.0"
+
+[[mods]]
+modId = "create_devclient"
+version = "1.0"
+displayName = "Create client smoke test (dev only)"
+description = "Loaded only by the clientSmoke dev run; never shipped."

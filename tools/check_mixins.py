@@ -239,6 +239,10 @@ for config, src in CONFIGS:
                 hits = [h for t in live for h in find_methods(t, spec)]
                 if not hits:
                     problems.append(f'@{am.group(1)} method {spec} not found')
+                elif '(' not in spec and len({d for _, d, _ in hits}) > 1:
+                    # NeoForge often adds an overload and turns the vanilla one into a delegate; a name-only
+                    # spec then matches both, and the handler signature fits at most one of them
+                    problems.append(f'@{am.group(1)} method {spec} matches {len(hits)} overloads: ' + ', '.join(sorted(d for _, d, _ in hits)))
                 found += hits
             for at in re.finditer(r'@At\(([^@]*?)\)(?=\s*[,)}])', ann):
                 body = at.group(1)

@@ -66,6 +66,16 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        // NeoForge port: dev-only bisecting aid, -Dcreate.debug.disableMixins=SimpleName,...
+        String disabled = System.getProperty("create.debug.disableMixins");
+        if (disabled != null) {
+            String simpleName = mixinClassName.substring(mixinClassName.lastIndexOf('.') + 1);
+            for (String name : disabled.split(",")) {
+                if (name.trim().equals(simpleName)) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 

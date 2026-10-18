@@ -71,12 +71,15 @@ public class SchematicHandler {
     public SchematicHandler() {
         overlay = new SchematicHotbarSlotOverlay();
         currentTool = ToolType.DEPLOY;
-        selectionScreen = new ToolSelectionScreen(
-            Minecraft.getInstance(),
-            ImmutableList.of(ToolType.DEPLOY),
-            this::equip
-        );
+        // NeoForge: mods are constructed before Minecraft exists, so the screen is created on first use
         transformation = new SchematicTransformation();
+    }
+
+    private ToolSelectionScreen selectionScreen() {
+        if (selectionScreen == null) {
+            selectionScreen = new ToolSelectionScreen(Minecraft.getInstance(), ImmutableList.of(ToolType.DEPLOY), this::equip);
+        }
+        return selectionScreen;
     }
 
     public void tick(Minecraft mc) {
@@ -120,7 +123,7 @@ public class SchematicHandler {
             sync(player);
         }
 
-        selectionScreen.update();
+        selectionScreen().update();
         currentTool.getTool().updateSelection(mc);
     }
 
@@ -134,7 +137,7 @@ public class SchematicHandler {
             ToolType toolBefore = currentTool;
             selectionScreen = new ToolSelectionScreen(mc, ToolType.getTools(player.isCreative()), this::equip);
             if (toolBefore != null) {
-                selectionScreen.setSelectedElement(toolBefore);
+                selectionScreen().setSelectedElement(toolBefore);
                 equip(toolBefore);
             }
         } else {
@@ -289,7 +292,7 @@ public class SchematicHandler {
         }
         currentTool.getTool()
             .renderOverlay(mc.gui, guiGraphics, tickProgress, guiGraphics.guiWidth(), guiGraphics.guiHeight());
-        selectionScreen.renderPassive(guiGraphics, tickProgress);
+        selectionScreen().renderPassive(guiGraphics, tickProgress);
     }
 
     public boolean onMouseInput(Minecraft mc, int button) {
@@ -319,12 +322,12 @@ public class SchematicHandler {
             return false;
         }
 
-        if (pressed && !selectionScreen.focused) {
-            selectionScreen.focused = true;
+        if (pressed && !selectionScreen().focused) {
+            selectionScreen().focused = true;
         }
-        if (!pressed && selectionScreen.focused) {
-            selectionScreen.focused = false;
-            selectionScreen.onClose();
+        if (!pressed && selectionScreen().focused) {
+            selectionScreen().focused = false;
+            selectionScreen().onClose();
         }
         return true;
     }
@@ -334,8 +337,8 @@ public class SchematicHandler {
             return false;
         }
 
-        if (selectionScreen.focused) {
-            selectionScreen.cycle((int) Math.signum(delta));
+        if (selectionScreen().focused) {
+            selectionScreen().cycle((int) Math.signum(delta));
             return true;
         }
         if (mc.hasControlDown()) {

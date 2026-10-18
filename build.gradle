@@ -98,6 +98,8 @@ sourceSets {
             exclude 'com/zurrtum/create/client/mixin/ItemFeatureRendererMixin.java'
             exclude 'com/zurrtum/create/client/mixin/ModelMixin.java'
             exclude 'com/zurrtum/create/client/mixin/ModelPartMixin.java'
+            // NeoForge merged the RETURN it injected at; replaced by InputEvent.Key (CreateClientInput)
+            exclude 'com/zurrtum/create/client/mixin/KeyboardHandlerMixin.java'
             // Fabric API (FRAPI, transfer rendering) bridges; NeoForge uses the vanilla-only code paths
             exclude 'com/zurrtum/create/client/compat/fabric/**'
             exclude 'com/zurrtum/create/client/flywheel/lib/model/baked/FabricEmitterSupplier.java'
@@ -115,6 +117,11 @@ sourceSets {
             exclude 'assets/fabric/**'
         }
     }
+    // Dev-only client smoke test for the clientSmoke run; not part of the jar
+    devclient {
+        compileClasspath += main.output + client.output
+        runtimeClasspath += main.output + client.output
+    }
 }
 
 configurations {
@@ -130,30 +137,68 @@ neoForge {
     version = project.neo_version
 
     addModdingDependenciesTo sourceSets.client
+    addModdingDependenciesTo sourceSets.devclient
 
     // Compile-time view of the interfaces ContainerMixin/WorldlyContainerMixin add at runtime
     interfaceInjectionData {
         from file('interfaces.json')
     }
 
+    mods {
+        "${modId}" {
+            sourceSet(sourceSets.main)
+            // -PserverOnly runs the server side without building the client source set
+            if (!project.hasProperty('serverOnly')) {
+                sourceSet(sourceSets.client)
+            }
+        }
+        create_devclient {
+            sourceSet(sourceSets.devclient)
+        }
+    }
+
     runs {
         client {
             client()
             sourceSet = sourceSets.client
+            loadedMods = [mods."${modId}"]
             systemProperty 'neoforge.enabledGameTestNamespaces', modId
         }
         server {
             server()
+            loadedMods = [mods."${modId}"]
             programArgument '--nogui'
             systemProperty 'neoforge.enabledGameTestNamespaces', modId
         }
         gameTestServer {
             type = 'gameTestServer'
             systemProperty 'neoforge.enabledGameTestNamespaces', modId
+            loadedMods = [mods."${modId}"]
+        }
+        // Scripted client check (src/devclient): title screen, a flat world, a water wheel driving a press,
+        // screenshots in run-smoke/screenshots, then the client quits by itself
+        clientSmoke {
+            client()
+            sourceSet = sourceSets.devclient
+            gameDirectory = project.file('run-smoke')
+            systemProperty 'create.clientSmoke', 'true'
+            loadedMods = [mods."${modId}", mods.create_devclient]
+        }
+        // Control for clientSmoke: the same vanilla blocks without Create loaded
+        clientSmokeVanilla {
+            client()
+            sourceSet = sourceSets.devclient
+            gameDirectory = project.file('run-smoke-vanilla')
+            systemProperty 'create.clientSmoke', 'true'
+            systemProperty 'create.clientSmoke.vanilla', 'true'
+            loadedMods = [mods.create_devclient]
         }
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             logLevel = org.slf4j.event.Level.INFO
+            if (project.hasProperty('disableMixins')) {
+                systemProperty 'create.debug.disableMixins', project.property('disableMixins')
+            }
             if (project.hasProperty('mixinDebug')) {
                 systemProperty 'mixin.debug.verbose', 'true'
                 systemProperty 'mixin.debug.export', 'true'
@@ -164,16 +209,6 @@ neoForge {
                 systemProperty 'mixin.ignoreRequired', 'true'
                 systemProperty 'mixin.debug.countInjections', 'true'
                 systemProperty 'mixin.debug.verbose', 'true'
-            }
-        }
-    }
-
-    mods {
-        "${modId}" {
-            sourceSet(sourceSets.main)
-            // -PserverOnly runs the server side without building the client source set
-            if (!project.hasProperty('serverOnly')) {
-                sourceSet(sourceSets.client)
             }
         }
     }

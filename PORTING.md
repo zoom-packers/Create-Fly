@@ -48,6 +48,12 @@ The goal is a small, mechanical diff against upstream, so that rebasing onto new
   - `-PmixinDebug` turns on `mixin.debug.verbose` and export.
   - `-PmixinScan` adds `mixin.ignoreRequired` and `countInjections`.
   - `-PserverOnly` runs without the client source set.
+  - `-PdisableMixins=A,B` skips the named client mixins (dev-only bisecting aid in the client `MixinPlugin`).
+- **Client smoke test:** `./gradlew runClientSmoke` starts a client with the dev-only `src/devclient` helper mod
+  (`create_devclient`, never in the jar). It screenshots the title screen, creates a flat world, builds the
+  water wheel → shaft → press setup from `CreateGameTests`, logs `SMOKE PASS`/`SMOKE FAIL` and quits by itself.
+  Screenshots land in `run-smoke/screenshots`. `runClientSmokeVanilla` places the same vanilla blocks without Create
+  loaded, as a rendering control. Both open a game window.
 
 ## Loader and entrypoints
 
@@ -101,6 +107,7 @@ NeoForge patches the vanilla calls that some of upstream's mixins targeted. For 
 | `SwingControlItem` (`IItemExtension`) | `onEntitySwing` | `LivingEntityMixin#swingHand` |
 | `CopycatBlock` | `getLightEmission` / `hasDynamicLightEmission` | `LightCoordsUtilMixin` |
 | `SyncedBlockEntity` | `handleUpdateTag` / `onDataPacket(Connection, ValueInput)` | `LevelChunkMixin#handleUpdateTag`, `ClientPacketListenerMixin#onDataPacket` |
+| Schematic, toolbox and wrench keys | `InputEvent.Key` (`client/neoforge/CreateClientInput`) | `KeyboardHandlerMixin` (its `RETURN` ordinal 4 no longer exists: NeoForge merges the release and press branches before `ClientHooks.onKeyInput`) |
 | Diving helmet | `LivingBreatheEvent` (`CreateNeoForge#breathe`) | `LivingEntityMixin#breatheInLava`, `#canBreatheInWater` |
 | Train carriages leaving ticking chunks | `EntityEvent.EnteringSection` (`CreateNeoForge#enterSection`, server levels only; NeoForge also fires it on the client) | `PersistentEntitySectionManagerCallbackMixin` (its implicit `@Local long` is ambiguous in NeoForge's patched `onMove` and crashed the server the first time an entity changed section) |
 
@@ -156,6 +163,15 @@ Other mixins were retargeted to NeoForge's patched code:
   `VertexConsumer#setUv3` was added.
 - **Feature output target.** `RenderSystem.outputColorTextureOverride` is gone. Ponder and GUI scenes open their own
   render pass and call `FeatureRenderDispatcher.renderAllFeatures(pass, frame)`.
+- **Core shaders.** Shaders now compile to SPIR-V: `#moj_import` became `#include`, every shader needs
+  `#extension GL_ARB_separate_shader_objects`, and every `in`/`out` needs `layout(location = N)`. Vertex inputs are
+  numbered in vertex format order (`ENTITY`: Position, Color, UV0, UV1, UV2, Normal). Ponder's `entity_block` and
+  Create's `glowing_shader` were rewritten; with the old ones the first resource reload fails and the client quits.
+- **Mod construction order.** NeoForge constructs mods before `Minecraft` exists, while Fabric's client entrypoint runs
+  after it. `SchematicHandler` therefore creates its `ToolSelectionScreen` on first use.
+- **NeoForge overloads.** `ModelManager#discoverModelDependencies` gained a standalone-models parameter, and the vanilla
+  3-argument method now only delegates. `ModelManagerMixin` targets the full descriptor. `tools/check_mixins.py`
+  flags name-only injector targets that match several overloads.
 - **Entity renderers.** `shouldRender` / `getBoundingBoxForCulling` take the partial tick. Fog colours are vectors.
 
 ## Transfer (items and fluids)
@@ -242,10 +258,19 @@ Verified on 2026-10-18 (NeoForge 26.3.0.89, Java 25.0.1, Windows):
 
   The client config can only be exercised by `runClient`.
 - **Full ZP5 pack.** With the 136 server and both-side jars from `pack/mods` (Not Enough Crashes held out) in `run/mods`, `runGameTestServer` boots, and `water_wheel_drives_press` passes at tick 134. The 74 failures are the pack's known baseline (72 Easy Mob Farm, 2 Enderite mod: the game-test mock player isn't a `ServerPlayer`). The parent session's full-pack server boot found the section-move crash above.
-- **Client.** `runClient` has not been run yet; the user asked to hold off. Still to check on the client:
-  - the title screen (client mixins apply, Flywheel and Ponder reload listeners)
-  - a world where a water wheel drives a mechanical press
-  - the `TODO(neoforge 26.3)` rendering items listed above
+- **Client (`runClientSmoke`, 2026-10-18, OpenGL on an RTX 5090).** It reaches the title screen, and all client
+  mixins apply. In a new flat world the water wheel turns at 8 RPM, the press runs at 8 RPM and the depot holds an
+  iron sheet (`SMOKE PASS`). The wheel, shaft, press and depot render, the wheel turns visibly, and the press head shows.
+- **Open client bugs:**
+  - **Cutout and translucent chunk geometry is not drawn while Create is loaded.** Glass and water are missing from
+    the screen, although the client level has the blocks. `runClientSmokeVanilla` draws the same scene correctly,
+    so a Create client mixin causes it. Switching off single mixins is hard because several depend on each other.
+  - **With Flywheel's backend `OFF`**, the solid feature phase crashes: `Render pass color attachment count must match
+    pipeline color target state count` (`PreparedRenderType.draw`). A Create render type uses a pipeline whose
+    color targets don't match the main pass, probably one built from an OIT snippet. This is likely related to the
+    bug above.
+  - Items on depots were not visible in the screenshots. Not checked further.
+  - The `TODO(neoforge 26.3)` rendering items listed above are still open.
 
 Upstream data problems that 26.3 makes fatal: advancements that pointed at recipes that don't exist
 (`crafting///tree_fertilizer`, `crafting/materials/copper_ingot`, `crafting/materials/copper_nugget`) were removed.
