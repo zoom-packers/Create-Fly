@@ -3641,5 +3641,16 @@
   "tag.recipe_serializer.create.automation_ignore": "Non-automatable",
   "fluid.create.milk": "Milk",
   "block.create.milk": "Milk",
-  "key.category.create.binding": "Create"
+  "key.category.create.binding": "Create",
+  "tag.item.create.convertable_to_mud": "Convertible to Mud",
+  "tag.item.create.track_nuggets": "Track Nuggets",
+  "tag.item.create.enchantment.deny_aqua_affinity": "Denies Aqua Affinity",
+  "tag.item.create.enchantment.deny_infinity": "Denies Infinity",
+  "tag.item.create.enchantment.deny_mending": "Denies Mending",
+  "tag.item.create.enchantment.deny_unbreaking": "Denies Unbreaking",
+  "tag.item.create.enchantment.knockback": "Enchantable with Knockback",
+  "tag.item.create.enchantment.looting": "Enchantable with Looting",
+  "tag.item.create.repairs_cardboard_armor": "Repairs Cardboard Armor",
+  "tag.item.create.repairs_copper_armor": "Repairs Copper Armor",
+  "entity.create.ejector_item": "Ejected Item"
 }
