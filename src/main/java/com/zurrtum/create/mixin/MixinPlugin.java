@@ -23,7 +23,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
         // NeoForge prefixes modded registry directories with the namespace; Create's data uses bare paths
         mixins.add("RegistriesMixin");
         {
-            mixins.add("CreativeModeTabMixin");
+            // NeoForge: no CreativeModeTabMixin, since NeoForge pages the creative tabs itself (see CreativeModeTabsMixin)
             mixins.add("CreativeModeTabsMixin");
             mixins.add("SavedDataStorageMixin");
             // NeoForge: IngredientMixin is replaced by neoforge:components (DataComponentIngredient)

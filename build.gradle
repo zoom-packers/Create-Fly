@@ -183,7 +183,7 @@ neoForge {
             sourceSet = sourceSets.devclient
             gameDirectory = project.file('run-smoke')
             systemProperty 'create.clientSmoke', 'true'
-            // -PsmokeScenarios=press,contraption,oit,ponder,jei (default press); -PsmokeTag=name- prefixes screenshots
+            // -PsmokeScenarios=press,contraption,oit,ponder,jei,creative (default press); -PsmokeTag=name- prefixes screenshots
             systemProperty 'create.clientSmoke.scenarios', project.findProperty('smokeScenarios') ?: 'press'
             systemProperty 'create.clientSmoke.tag', project.findProperty('smokeTag') ?: ''
             // -PsmokeProps=key=value,key2=value2 adds extra system properties (debugging aid)

@@ -53,12 +53,13 @@ The goal is a small, mechanical diff against upstream, so that rebasing onto new
   (`create_devclient`, never in the jar). It screenshots the title screen, creates a flat world, runs the chosen
   scenarios, logs one `SMOKE RESULT <check> PASS|FAIL` line per check plus a `SMOKE SUMMARY`, and quits by itself.
   Screenshots land in `run-smoke/screenshots`. It opens a game window, so leave the window alone while it runs.
-  - `-PsmokeScenarios=press,contraption,oit,ponder,jei` (default `press`):
+  - `-PsmokeScenarios=press,contraption,oit,ponder,jei,creative` (default `press`):
     - `press`: the `CreateGameTests` water wheel → shaft → press setup
     - `contraption`: a creative motor turning a mechanical bearing with a stair block
     - `oit`: the scene with improved transparency on
     - `ponder`: the water wheel Ponder scene
     - `jei`: the creative inventory with JEI's overlay, then JEI's recipes for the iron sheet
+    - `creative`: clicks every tab on every NeoForge creative tab page and checks it gets selected
   - `-PwithJei` and `-PwithSodium` (Sodium + Iris) add those mods to the dev runs.
   - `-PsmokeTag=name-` prefixes the screenshot names; `-PsmokeProps=k=v,...` adds system properties.
   - `runClientSmokeVanilla` places the same vanilla blocks without Create loaded, as a rendering control.
@@ -97,6 +98,7 @@ Things Fabric Loader without Fabric API had to do by hand, which NeoForge alread
 | `RegistryEntryAddedCallback` (ComputerCraft display sources) | `CreateNeoForge.afterRegistration` (common setup) |
 | `FluidVariantRendering` tint | NeoForge `FluidTintSource` (`client.neoforge.NeoForgeFluidTints`) |
 | `ReloadListenerMixin` (`FabricResourceReloader`) | Excluded, not needed |
+| Creative tab paging (Fabric's copy in `CreativeModeTabMixin`, `CreativeModeTabsMixin#paginateGroups`, client `CreativeModeInventoryScreenMixin`) | NeoForge's own creative tab pages. None of the three is applied: the screen mixin hid every tab whose Fabric page differed from its own page counter, so NeoForge's mod-tab pages showed no tabs (upstream applies it only without Fabric API's creative tab module). Create's tabs use NeoForge's `CreativeModeTab.builder()`, and `CreativeModeTabsMixin` still skips vanilla's bootstrap position check |
 
 ## NeoForge hooks that replace upstream mixins
 

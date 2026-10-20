@@ -25,18 +25,19 @@ public class AllCreativeModeTabs {
         Identifier.fromNamespaceAndPath(MOD_ID, "palettes")
     );
 
-    @SuppressWarnings("DataFlowIssue")
+    // NeoForge: NeoForge's builder() (top row, column 0, as for every NeoForge mod's tab). Fabric's pagination gave the
+    // tabs their row and column on Fabric; NeoForge pages tabs itself and doesn't read them
     public static void register() {
         Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,
             BASE_GROUP,
-            CreativeModeTab.builder(null, -1).title(Component.translatable("itemGroup.create.base"))
+            CreativeModeTab.builder().title(Component.translatable("itemGroup.create.base"))
                 .icon(() -> new ItemStack(AllBlocks.COGWHEEL)).displayItems(AllCreativeModeTabs::base).build()
         );
         Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,
             PALETTES_GROUP,
-            CreativeModeTab.builder(null, -1).title(Component.translatable("itemGroup.create.palettes"))
+            CreativeModeTab.builder().title(Component.translatable("itemGroup.create.palettes"))
                 .icon(() -> new ItemStack(AllBlocks.ORNATE_IRON_WINDOW)).displayItems(AllCreativeModeTabs::palettes)
                 .build()
         );

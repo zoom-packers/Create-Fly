@@ -1,5 +1,6 @@
 package com.zurrtum.create.devclient;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllItems;
 import com.zurrtum.create.client.ponder.foundation.ui.PonderUI;
@@ -14,13 +15,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -37,10 +43,13 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.gui.CreativeTabsScreenPage;
 import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -57,6 +66,7 @@ import java.util.UUID;
  *     <li>{@code oit}: the same scene with improved transparency switched on</li>
  *     <li>{@code ponder}: the water wheel ponder scene</li>
  *     <li>{@code jei}: the creative inventory with JEI's overlay, then JEI's recipes for the iron sheet</li>
+ *     <li>{@code creative}: every tab on every page of the creative inventory can be clicked and selected</li>
  * </ul>
  */
 @Mod(value = "create_devclient", dist = Dist.CLIENT)
@@ -255,8 +265,69 @@ public final class ClientSmokeTest {
                 t += 200;
             }
         }
+        if (SCENARIOS.contains("creative")) {
+            at(t + 10, () -> mc.gui.setScreen(new CreativeModeInventoryScreen(mc.player, mc.player.connection.enabledFeatures(), true)));
+            at(t + 40, () -> checkCreativeTabs(mc));
+            at(t + 50, () -> mc.gui.setScreen(null));
+            t += 60;
+        }
         at(t + 20, () -> {
         });
+    }
+
+    /**
+     * Clicks every tab on every page of NeoForge's creative tab pages, as a player would, and checks that it gets
+     * selected. Create's Fabric creative-tab paging hid every tab whose Fabric page differed from its own page counter,
+     * which left NeoForge's mod-tab pages without tabs.
+     */
+    private void checkCreativeTabs(Minecraft mc) {
+        if (!(mc.gui.screen() instanceof CreativeModeInventoryScreen screen)) {
+            result("creative-tabs", false, "creative inventory not open: " + mc.gui.screen());
+            return;
+        }
+        try {
+            Field pagesField = CreativeModeInventoryScreen.class.getDeclaredField("pages");
+            pagesField.setAccessible(true);
+            Field selectedField = CreativeModeInventoryScreen.class.getDeclaredField("selectedTab");
+            selectedField.setAccessible(true);
+            Method tabX = CreativeModeInventoryScreen.class.getDeclaredMethod("getTabX", CreativeModeTab.class);
+            tabX.setAccessible(true);
+            Method tabY = CreativeModeInventoryScreen.class.getDeclaredMethod("getTabY", CreativeModeTab.class);
+            tabY.setAccessible(true);
+            Field leftField = AbstractContainerScreen.class.getDeclaredField("leftPos");
+            leftField.setAccessible(true);
+            Field topField = AbstractContainerScreen.class.getDeclaredField("topPos");
+            topField.setAccessible(true);
+            int left = leftField.getInt(screen);
+            int top = topField.getInt(screen);
+            @SuppressWarnings("unchecked")
+            List<CreativeTabsScreenPage> pages = List.copyOf((List<CreativeTabsScreenPage>) pagesField.get(screen));
+            List<String> broken = new ArrayList<>();
+            int clicked = 0;
+            for (int i = 0; i < pages.size(); i++) {
+                CreativeTabsScreenPage page = pages.get(i);
+                screen.setCurrentPage(page);
+                for (CreativeModeTab tab : page.getVisibleTabs()) {
+                    // The tab's centre
+                    double x = left + (int) tabX.invoke(screen, tab) + 13;
+                    double y = top + (int) tabY.invoke(screen, tab) + 16;
+                    MouseButtonEvent click = new MouseButtonEvent(x, y, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
+                    screen.mouseClicked(click, false);
+                    screen.mouseReleased(click);
+                    clicked++;
+                    if (selectedField.get(null) != tab) {
+                        broken.add("page " + (i + 1) + ": " + BuiltInRegistries.CREATIVE_MODE_TAB.getKey(tab));
+                    }
+                }
+            }
+            result(
+                "creative-tabs",
+                !pages.isEmpty() && broken.isEmpty(),
+                pages.size() + " pages, " + clicked + " tab clicks" + (broken.isEmpty() ? "" : ", not selectable: " + String.join(", ", broken))
+            );
+        } catch (ReflectiveOperationException e) {
+            result("creative-tabs", false, e.toString());
+        }
     }
 
     private void result(String check, boolean ok, String detail) {

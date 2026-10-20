@@ -31,7 +31,9 @@ public class MixinPlugin implements IMixinConfigPlugin {
         //            mixins.add("RecipeViewScreenMixin");
         //            mixins.add("CraftingViewRecipeAccessor");
         //        }
-        mixins.add("CreativeModeInventoryScreenMixin");
+        // NeoForge pages the creative tabs itself. Create's copy of Fabric's paging (CreativeModeInventoryScreenMixin, which
+        // upstream only applies without Fabric API's creative tab module) hid every tab not on its own page counter's page,
+        // so NeoForge's mod-tab pages showed no tabs. It stays off, as does the Fabric pagination it read its pages from.
         if (false) {
             mixins.add("SimpleModelPartMixin");
             mixins.add("SimpleModelWrapperMixin");
