@@ -26,7 +26,8 @@ public class TextureBinder {
     }
 
     public static void bindCrumbling(Identifier Identifier) {
-        AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(Identifier);
+        // 26.3: never load a texture here, inside the render pass
+        AbstractTexture texture = PendingTextures.get(Identifier);
         setupTexture(Samplers.CRUMBLING, texture.getTextureView(), texture.getSampler());
     }
 

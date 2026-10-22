@@ -60,6 +60,8 @@ The goal is a small, mechanical diff against upstream, so that rebasing onto new
     - `ponder`: the water wheel Ponder scene
     - `jei`: the creative inventory with JEI's overlay, then JEI's recipes for the iron sheet
     - `creative`: clicks every tab on every NeoForge creative tab page and checks it gets selected
+    - `texture`: a Flywheel visual whose material uses the sniffer texture, which nothing else loads; Flywheel must
+      keep its backend
   - `-PwithJei` and `-PwithSodium` (Sodium + Iris) add those mods to the dev runs.
   - `-PsmokeTag=name-` prefixes the screenshot names; `-PsmokeProps=k=v,...` adds system properties.
   - `runClientSmokeVanilla` places the same vanilla blocks without Create loaded, as a rendering control.
@@ -189,6 +191,16 @@ Other mixins were retargeted to NeoForge's patched code:
   `MaterialRenderState#reset` used to bind framebuffer 0 afterwards. Everything later in that pass then went to the
   default framebuffer: translucent terrain (glass and water, which is translucent in 26.3), clouds, weather, and
   items on depots. `reset` now rebinds the framebuffer that was bound before `setupFrameBuffer`.
+- **No texture uploads inside a render pass.** `TextureManager#getTexture` loads and uploads a texture it hasn't seen
+  yet, and 26.3 refuses that while a render pass is open (`Close the existing render pass before performing additional
+  commands`, wrapped as `ReportedException: Uploading texture`). `MaterialRenderState#setupTexture` called it in the
+  middle of the main pass, so the first visual whose material used a texture nothing had loaded yet made Flywheel fall
+  back from indirect to instancing to off for the rest of the session. Create's own visuals only use loaded textures,
+  but an addon's entity texture usually isn't loaded. Now `DrawManager` queues a model's textures when it creates an
+  instancer (`PendingTextures`), and `LevelRendererMixin#flywheel$beforeMainPass` (the head of
+  `LevelRenderer#prepareTranslucents`, the main pass's last step before it opens its render pass) finishes Flywheel's
+  frame plan and loads them. Draws only look textures up (`TextureManagerAccessor`); one that still isn't loaded is
+  drawn with the missing texture for a frame and loaded before the next. The smoke test's `texture` scenario covers it.
 - **Pipelines start with no color targets.** `RenderPipeline.Builder` has zero color targets unless one is set, and
   vanilla sets `ColorTargetState.DEFAULT` explicitly. Ponder's `entity_block` snippets didn't, so their solid and
   cutout pipelines crashed (`Render pass color attachment count must match pipeline color target state count`)
@@ -319,6 +331,10 @@ Verified on 2026-10-18 (NeoForge 26.3.0.89, Java 25.0.1, Windows):
   - `oit`: improved transparency on; glass and water still render
   - `ponder`: the water wheel scene, with its base plate, water wheel, shaft, gauge and text
   - `jei`: JEI's overlay and creative tabs, and Create's Pressing category with the animated press
+  - `texture` (2026-10-22): the sniffer-textured cube draws with its texture and Flywheel stays on `flywheel:indirect`.
+    With the old `setupTexture` the same run logged `Close the existing render pass before performing additional
+    commands`, then `Flywheel backend fell back from 'flywheel:indirect' to 'flywheel:instancing'`, and failed.
+    `press` and `contraption` still pass with the fix.
   Variants:
   - Flywheel backend `OFF`: `press` passes and renders the same.
   - Sodium 0.9.3-beta.1 + Iris 1.11.7 (`-PwithSodium`, no shader pack): `press`, `contraption` and `ponder` pass and

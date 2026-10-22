@@ -95,6 +95,8 @@ public abstract class DrawManager<N extends AbstractInstancer<?>> {
             // so you'd think we don't need extra synchronization to protect the queue, but
             // somehow threads can race here and wind up never initializing an instancer.
             initializationQueue.add(new UninitializedInstancer<>(key, out));
+            // 26.3: load the model's textures before the render pass that draws them
+            PendingTextures.queue(key.model());
         }
         return out;
     }

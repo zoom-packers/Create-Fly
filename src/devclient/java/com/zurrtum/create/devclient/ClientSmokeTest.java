@@ -3,6 +3,23 @@ package com.zurrtum.create.devclient;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zurrtum.create.AllBlocks;
 import com.zurrtum.create.AllItems;
+import com.zurrtum.create.client.flywheel.api.backend.Backend;
+import com.zurrtum.create.client.flywheel.api.backend.BackendManager;
+import com.zurrtum.create.client.flywheel.api.model.IndexSequence;
+import com.zurrtum.create.client.flywheel.api.model.Mesh;
+import com.zurrtum.create.client.flywheel.api.model.Model;
+import com.zurrtum.create.client.flywheel.api.vertex.MutableVertexList;
+import com.zurrtum.create.client.flywheel.api.visual.Effect;
+import com.zurrtum.create.client.flywheel.api.visual.EffectVisual;
+import com.zurrtum.create.client.flywheel.api.visualization.VisualizationContext;
+import com.zurrtum.create.client.flywheel.api.visualization.VisualizationManager;
+import com.zurrtum.create.client.flywheel.lib.instance.InstanceTypes;
+import com.zurrtum.create.client.flywheel.lib.instance.TransformedInstance;
+import com.zurrtum.create.client.flywheel.lib.material.Materials;
+import com.zurrtum.create.client.flywheel.lib.material.SimpleMaterial;
+import com.zurrtum.create.client.flywheel.lib.model.Models;
+import com.zurrtum.create.client.flywheel.lib.model.SingleMeshModel;
+import com.zurrtum.create.client.mixin.TextureManagerAccessor;
 import com.zurrtum.create.client.ponder.foundation.ui.PonderUI;
 import com.zurrtum.create.content.contraptions.AbstractContraptionEntity;
 import com.zurrtum.create.content.contraptions.bearing.MechanicalBearingBlockEntity;
@@ -23,13 +40,17 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.Blocks;
@@ -45,6 +66,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.gui.CreativeTabsScreenPage;
 import net.neoforged.neoforge.common.NeoForge;
+import org.joml.Vector4fc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +89,8 @@ import java.util.UUID;
  *     <li>{@code ponder}: the water wheel ponder scene</li>
  *     <li>{@code jei}: the creative inventory with JEI's overlay, then JEI's recipes for the iron sheet</li>
  *     <li>{@code creative}: every tab on every page of the creative inventory can be clicked and selected</li>
+ *     <li>{@code texture}: a Flywheel visual whose material uses a texture nothing has loaded yet; Flywheel must stay
+ *     on its backend</li>
  * </ul>
  */
 @Mod(value = "create_devclient", dist = Dist.CLIENT)
@@ -90,6 +114,9 @@ public final class ClientSmokeTest {
     private final List<String> results = new ArrayList<>();
     private volatile BlockPos origin;
     private volatile float earlierAngle = Float.NaN;
+    private Backend backendBeforeTexture;
+    /** An entity texture a flat world never loads, so the Flywheel material below is the first to use it. */
+    private static final Identifier UNLOADED_TEXTURE = Identifier.withDefaultNamespace("textures/entity/sniffer/sniffer.png");
 
     public ClientSmokeTest() {
         if (Boolean.getBoolean("create.clientSmoke")) {
@@ -271,6 +298,26 @@ public final class ClientSmokeTest {
             at(t + 50, () -> mc.gui.setScreen(null));
             t += 60;
         }
+        if (!VANILLA && SCENARIOS.contains("texture")) {
+            at(t + 10, () -> {
+                backendBeforeTexture = BackendManager.currentBackend();
+                if (((TextureManagerAccessor) mc.getTextureManager()).create$getByPath().containsKey(UNLOADED_TEXTURE)) {
+                    result("flywheel-texture", false, UNLOADED_TEXTURE + " was already loaded, so the check proves nothing");
+                }
+                VisualizationManager.get(mc.level).effects().queueAdd(new TextureEffect(mc.level, origin.offset(6, 2, 6)));
+            });
+            at(t + 60, () -> {
+                shot(mc, "8-texture");
+                Backend backend = BackendManager.currentBackend();
+                boolean loaded = ((TextureManagerAccessor) mc.getTextureManager()).create$getByPath().containsKey(UNLOADED_TEXTURE);
+                result(
+                    "flywheel-texture",
+                    BackendManager.isBackendOn() && backend == backendBeforeTexture && loaded,
+                    "backend " + Backend.REGISTRY.getId(backendBeforeTexture) + " -> " + Backend.REGISTRY.getId(backend) + ", " + UNLOADED_TEXTURE + " loaded " + loaded
+                );
+            });
+            t += 70;
+        }
         at(t + 20, () -> {
         });
     }
@@ -416,6 +463,78 @@ public final class ClientSmokeTest {
 
     private static void set(ServerLevel level, BlockPos pos, BlockState state) {
         level.setBlock(pos, state, 3);
+    }
+
+    /** A sniffer-textured cube drawn by Flywheel, for the {@code texture} scenario. */
+    private record TextureEffect(LevelAccessor level, BlockPos pos) implements Effect {
+        @Override
+        public EffectVisual<?> visualize(VisualizationContext ctx, float partialTick) {
+            return new TextureEffectVisual(ctx, pos);
+        }
+    }
+
+    /** Stretches the block mesh's atlas UVs over the whole texture, so the screenshot shows which texture was drawn. */
+    private record WholeTextureMesh(Mesh mesh) implements Mesh {
+        @Override
+        public int vertexCount() {
+            return mesh.vertexCount();
+        }
+
+        @Override
+        public void write(MutableVertexList vertexList) {
+            mesh.write(vertexList);
+            float minU = Float.MAX_VALUE, maxU = -Float.MAX_VALUE, minV = Float.MAX_VALUE, maxV = -Float.MAX_VALUE;
+            for (int i = 0; i < vertexCount(); i++) {
+                minU = Math.min(minU, vertexList.u(i));
+                maxU = Math.max(maxU, vertexList.u(i));
+                minV = Math.min(minV, vertexList.v(i));
+                maxV = Math.max(maxV, vertexList.v(i));
+            }
+            for (int i = 0; i < vertexCount(); i++) {
+                vertexList.u(i, (vertexList.u(i) - minU) / (maxU - minU));
+                vertexList.v(i, (vertexList.v(i) - minV) / (maxV - minV));
+            }
+        }
+
+        @Override
+        public IndexSequence indexSequence() {
+            return mesh.indexSequence();
+        }
+
+        @Override
+        public int indexCount() {
+            return mesh.indexCount();
+        }
+
+        @Override
+        public Vector4fc boundingSphere() {
+            return mesh.boundingSphere();
+        }
+    }
+
+    private static final class TextureEffectVisual implements EffectVisual<TextureEffect> {
+        private final TransformedInstance instance;
+
+        TextureEffectVisual(VisualizationContext ctx, BlockPos pos) {
+            Model stone = Models.block(Blocks.STONE.defaultBlockState());
+            Model model = new SingleMeshModel(
+                new WholeTextureMesh(stone.meshes().getFirst().mesh()),
+                SimpleMaterial.builderOf(Materials.SOLID_BLOCK).texture(UNLOADED_TEXTURE).build()
+            );
+            instance = ctx.instancerProvider().instancer(InstanceTypes.TRANSFORMED, model).createInstance();
+            Vec3i o = ctx.renderOrigin();
+            instance.setIdentityTransform().translate(pos.getX() - o.getX(), pos.getY() - o.getY(), pos.getZ() - o.getZ())
+                .light(LightCoordsUtil.FULL_BRIGHT).setChanged();
+        }
+
+        @Override
+        public void update(float partialTick) {
+        }
+
+        @Override
+        public void delete() {
+            instance.delete();
+        }
     }
 
     private static void shot(Minecraft mc, String name) {

@@ -64,6 +64,7 @@
     "RenderTypeMixin",
     "SectionCompilerMixin",
     "TextureAtlasMixin",
+    "TextureManagerAccessor",
     "TrimSpriteKeyMixin",
     "WorldOpenFlowsMixin"
   ],

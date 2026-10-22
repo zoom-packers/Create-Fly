@@ -3,6 +3,7 @@ package com.zurrtum.create.client.flywheel.impl.event;
 import com.zurrtum.create.client.flywheel.api.backend.Engine.CrumblingBlock;
 import com.zurrtum.create.client.flywheel.api.backend.RenderContext;
 import com.zurrtum.create.client.flywheel.api.visualization.VisualizationManager;
+import com.zurrtum.create.client.flywheel.impl.visualization.VisualizationManagerImpl;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
@@ -44,6 +45,12 @@ public class RenderContextImpl implements RenderContext {
     public void onStartLevelRender() {
         if (visualizationManager != null) {
             visualizationManager.renderDispatcher().onStartLevelRender(this);
+        }
+    }
+
+    public void beforeMainPass() {
+        if (visualizationManager instanceof VisualizationManagerImpl manager) {
+            manager.beforeMainPass();
         }
     }
 

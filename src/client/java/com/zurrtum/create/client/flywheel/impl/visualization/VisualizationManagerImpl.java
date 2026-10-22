@@ -13,6 +13,7 @@ import com.zurrtum.create.client.flywheel.api.visualization.VisualManager;
 import com.zurrtum.create.client.flywheel.api.visualization.VisualizationLevel;
 import com.zurrtum.create.client.flywheel.api.visualization.VisualizationManager;
 import com.zurrtum.create.client.flywheel.backend.engine.EngineImpl;
+import com.zurrtum.create.client.flywheel.backend.engine.PendingTextures;
 import com.zurrtum.create.client.flywheel.impl.FlwConfig;
 import com.zurrtum.create.client.flywheel.impl.task.Flag;
 import com.zurrtum.create.client.flywheel.impl.task.FlwTaskExecutor;
@@ -268,6 +269,15 @@ public class VisualizationManagerImpl implements VisualizationManager {
         frameLimiter.tick();
 
         lateInit().framePlan.execute(taskExecutor, context);
+    }
+
+    /**
+     * 26.3: finish the frame plan before vanilla opens the main render pass, and load the textures of the instancers
+     * it created while uploads are still allowed (see {@link PendingTextures}).
+     */
+    public void beforeMainPass() {
+        taskExecutor.syncUntil(frameFlag::isRaised);
+        PendingTextures.load();
     }
 
     /**

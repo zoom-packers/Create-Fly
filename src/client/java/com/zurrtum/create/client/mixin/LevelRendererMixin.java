@@ -104,6 +104,12 @@ public abstract class LevelRendererMixin implements RenderContextHolder {
         renderContext.onStartLevelRender();
     }
 
+    // 26.3: the main pass's last step before it opens its render pass, where textures can still be uploaded
+    @Inject(method = "prepareTranslucents()V", at = @At("HEAD"))
+    private void flywheel$beforeMainPass(CallbackInfo ci) {
+        renderContext.beforeMainPass();
+    }
+
     @Inject(method = "executeSolid(Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher$PreparedFrame;Lcom/mojang/renderpearl/api/commands/RenderPass;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher$PreparedFrame;executeSolid(Lcom/mojang/renderpearl/api/commands/RenderPass;)V"))
     private void flywheel$beforeSolid(CallbackInfo ci) {
         renderContext.beforeSolid();

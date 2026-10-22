@@ -55,7 +55,8 @@ public final class MaterialRenderState {
 
     private static void setupTexture(Material material) {
         Samplers.DIFFUSE.makeActive();
-        AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(material.texture());
+        // 26.3: never load a texture here, inside the render pass
+        AbstractTexture texture = PendingTextures.get(material.texture());
         GlTexture glTexture = (GlTexture) texture.getTexture();
         int target;
         if ((glTexture.usage() & 16) != 0) {
