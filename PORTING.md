@@ -211,6 +211,12 @@ Other mixins were retargeted to NeoForge's patched code:
   Ponder's `PonderSceneRegistry#loadSchematic` and `SchematicItem#loadSchematic` didn't. Ponder's schematics are at
   data version 2975, so every block read as air and Ponder scenes showed only their shadow, outlines and text. Both
   loaders now data-fix first, which also keeps players' older schematic files loading.
+- **In-world outlines are plain render types.** Catnip's `outline_solid` and `outline_translucent` types were
+  `OutlineProperty.IS_OUTLINE`, as upstream has them. 26.3's `SubmitNodeCollection` sends such types only to the
+  glowing-entity outline phase, which runs only while an entity glows and binds no depth texture. So value boxes,
+  filter slots and the rest of Create's in-world outlines never drew, and the game crashed with "Render pipeline
+  minecraft:pipeline/entity_solid wants a depth texture but none was provided" once anything glowed nearby. Without
+  the property they draw in the solid and translucent phases. The `outline` smoke scenario checks both cases.
 - **GUI draws run at the end of the frame.** `GuiRenderer` records picture-in-picture blits during `prepare` and
   draws them later. Create's cached GUI textures (`catnip/gui/render/GpuTexture`, used by the Ponder, JEI and
   item-transform renderers) were closed mid-frame when an element was cleared or resized, which crashed with
@@ -264,8 +270,6 @@ as upstream's `AllTransfer.register()`. Other mods' handlers are wrapped as Crea
 - **Flywheel OIT** always composites into the main render target.
 - **Ponder translucent shading.** Ponder's translucent entity-block types use vanilla OIT pipelines with improved
   transparency (no Ponder shading). `TODO` in `PonderRenderPipelines`.
-- **In-world outlines.** Catnip's in-world outlines use outline render types, which 26.3 only draws into the glow target.
-  They may look different; not yet checked in game.
 - **`StencilElement`** still makes raw GL11 calls, so it does nothing on Vulkan.
 - **Item-ability shovels.** Only items that advertise `shovel_douse` extinguish lit blaze burners.
 

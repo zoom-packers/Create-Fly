@@ -19,6 +19,7 @@ import com.zurrtum.create.client.flywheel.lib.material.Materials;
 import com.zurrtum.create.client.flywheel.lib.material.SimpleMaterial;
 import com.zurrtum.create.client.flywheel.lib.model.Models;
 import com.zurrtum.create.client.flywheel.lib.model.SingleMeshModel;
+import com.zurrtum.create.client.catnip.outliner.Outliner;
 import com.zurrtum.create.client.mixin.TextureManagerAccessor;
 import com.zurrtum.create.client.ponder.foundation.ui.PonderUI;
 import com.zurrtum.create.content.contraptions.AbstractContraptionEntity;
@@ -46,6 +47,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -60,6 +62,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
@@ -91,6 +94,8 @@ import java.util.UUID;
  *     <li>{@code creative}: every tab on every page of the creative inventory can be clicked and selected</li>
  *     <li>{@code texture}: a Flywheel visual whose material uses a texture nothing has loaded yet; Flywheel must stay
  *     on its backend</li>
+ *     <li>{@code outline}: Catnip's in-world outlines, then again with a glowing entity in view (the entity outline
+ *     pass)</li>
  * </ul>
  */
 @Mod(value = "create_devclient", dist = Dist.CLIENT)
@@ -139,6 +144,8 @@ public final class ClientSmokeTest {
             ticks = 0;
             return;
         }
+        // Unattended: a window without focus must not open the pause menu, which would stall the LOADING stage
+        mc.options.pauseOnLostFocus = false;
         switch (stage) {
             case TITLE -> {
                 if (screen instanceof net.neoforged.neoforge.client.gui.LoadingErrorScreen) {
@@ -318,8 +325,47 @@ public final class ClientSmokeTest {
             });
             t += 70;
         }
+        if (!VANILLA && SCENARIOS.contains("outline")) {
+            // Catnip's in-world outlines (box, block cluster, line) over the setup, renewed every tick as Create does;
+            // then a glowing pig, which turns on the entity outline pass that IS_OUTLINE types used to crash
+            for (int i = 0; i < 160; i++) {
+                at(t + 10 + i, () -> showOutlines());
+            }
+            at(t + 60, () -> shot(mc, "9a-outline"));
+            at(t + 70, () -> onServer(mc, (server, level, player) -> {
+                BlockPos pig = origin.offset(6, 1, 4);
+                command(server, "summon minecraft:pig " + pig.getX() + " " + pig.getY() + " " + pig.getZ() + " {NoAI:1b}");
+                command(server, "effect give @e[type=minecraft:pig] minecraft:glowing 60 0 true");
+            }));
+            at(t + 150, () -> {
+                shot(mc, "9b-outline-glowing");
+                // Reaching this tick with the outlines up and the pig glowing is the check: it used to crash
+                List<Pig> pigs = mc.level.getEntitiesOfClass(Pig.class, new AABB(origin).inflate(12));
+                boolean glowing = pigs.stream().anyMatch(mc::shouldEntityAppearGlowing);
+                result("outline", glowing, pigs.size() + " pig(s), glowing on the client " + glowing + "; see 9a and 9b for the outlines");
+            });
+            t += 180;
+        }
         at(t + 20, () -> {
         });
+    }
+
+    private void showOutlines() {
+        Outliner outliner = Outliner.getInstance();
+        outliner.showAABB("smoke_box", new AABB(Vec3.atCenterOf(origin.offset(0, 1, 0)), Vec3.atCenterOf(origin.offset(8, 3, 4)))).colored(0xFF5555)
+            .lineWidth(1 / 16f);
+        List<BlockPos> cells = new ArrayList<>();
+        for (int x = 0; x < 3; x++) {
+            for (int z = 0; z < 2; z++) {
+                cells.add(origin.offset(x, 1, z));
+            }
+        }
+        outliner.showCluster("smoke_cluster", cells).colored(0x55FF55).lineWidth(1 / 16f);
+        outliner.showLine("smoke_line", Vec3.atCenterOf(origin.offset(0, 4, 0)), Vec3.atCenterOf(origin.offset(8, 4, 4))).colored(0x5555FF).lineWidth(1 / 8f);
+    }
+
+    private static void command(IntegratedServer server, String command) {
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), command);
     }
 
     /**

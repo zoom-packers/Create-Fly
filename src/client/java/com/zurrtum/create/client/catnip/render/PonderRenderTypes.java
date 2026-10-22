@@ -111,11 +111,14 @@ public class PonderRenderTypes {
             modelViewMatrix -> RenderSystem.getProjectionType().applyLayeringTransform(modelViewMatrix, -6.0F)
         )).createRenderSetup()
     );
+    // 26.3: not IS_OUTLINE. 26.3 draws IS_OUTLINE types only in the glowing-entity outline pass, which runs only while
+    // an entity glows and has no depth texture: Catnip's in-world outlines were invisible, and crashed the game while
+    // anything glowed. As plain types they draw in the solid and translucent phases, with depth.
     private static final RenderType OUTLINE_SOLID = RenderType.create(
         createLayerName("outline_solid"),
         RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
             .withTexture("Sampler0", PonderSpecialTextures.BLANK.getLocation()).useLightmap().useOverlay()
-            .setOutline(OutlineProperty.IS_OUTLINE).createRenderSetup()
+            .createRenderSetup()
     );
     private static final BiFunction<Identifier, Boolean, RenderType> OUTLINE_TRANSLUCENT = Util.memoize((texture, cull) -> RenderType.create(
         createLayerName("outline_translucent" + (cull ? "_cull" : "")),
@@ -123,7 +126,7 @@ public class PonderRenderTypes {
                 cull ? PonderRenderPipelines.ENTITY_TRANSLUCENT_CULL : PonderRenderPipelines.ENTITY_TRANSLUCENT)
             .sortOnUpload().withTexture("Sampler0", texture).useLightmap().useOverlay()
             .setOitPipelines(cull ? RenderPipelines.OIT_ENTITY_CULL : RenderPipelines.OIT_ENTITY)
-            .setOutline(OutlineProperty.IS_OUTLINE).createRenderSetup()
+            .createRenderSetup()
     ));
 
     public static RenderType getEntityBlockSolid() {
